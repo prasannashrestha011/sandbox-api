@@ -2,7 +2,11 @@ module main
 
 go 1.24
 
-require github.com/moby/moby/client v0.4.1
+require (
+	github.com/google/uuid v1.6.0
+	github.com/moby/moby/api v1.54.2
+	github.com/moby/moby/client v0.4.1
+)
 
 require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
@@ -15,7 +19,6 @@ require (
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
-	github.com/moby/moby/api v1.54.2 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
