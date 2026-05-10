@@ -1,30 +1,34 @@
-package types
+package sandbox_type
 
-import "time"
+import (
+	"time"
+)
 
 // CreateRequest payload for the sanbox creation
 type CreateRequest struct {
-	UserID string
+	UserID string `json:"user_id,omitempty"`
 	// Language Environment
-	Environment string
-	//Docker Image ID
-	ImageID string
+	Environment string `json:"environment,omitempty"`
+	// Docker Image ID
+	ImageID string `json:"image_id,omitempty"`
 
 	// -- resource limit for sandbox --
 	// Memory limit
-	MemoryLimit int64
-	//CPU usage limit
-	CPULimit int64
-	//Number of processes limit
-	PidsLimit int64
+	MemoryLimit int64 `json:"memory_limit,omitempty"`
+	// CPU usage limit
+	CPULimit int64 `json:"cpu_limit,omitempty"`
+	// Number of processes limit
+	PidsLimit int64 `json:"pids_limit,omitempty"`
 
 	// Sandbox session time expiration
-	SessionTimeout time.Duration // per-user session timeout
-	//Executed Command duration
-	ExecTimeout time.Duration // per-command session timeout
+	SessionTimeout time.Duration `json:"session_timeout,omitempty"` // per-user session timeout
+	// Executed Command duration
+	ExecTimeout time.Duration `json:"exec_timeout,omitempty"` // per-command session timeout
 
-	//Sandbox network mode
-	NetWorkMode string
+	// Sandbox network mode
+	NetworkMode string `json:"network_mode,omitempty"`
+}
 
-	CreatedAt time.Time
+type UpdateStatusRequest struct {
+	Status SandboxState `json:"status"`
 }
