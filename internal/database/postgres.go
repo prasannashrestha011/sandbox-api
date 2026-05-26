@@ -26,9 +26,9 @@ type PostgresConfig struct {
 func ConfigFromEnv() PostgresConfig {
 	return PostgresConfig{
 		Host:     getEnv("DB_HOST", "localhost"),
-		Port:     getEnvInt("DB_PORT", 5432),
+		Port:     getEnvInt("DB_PORT", 5452),
 		User:     getEnv("DB_USER", "postgres"),
-		Password: getEnv("DB_PASSWORD", ""),
+		Password: getEnv("DB_PASSWORD", "9843"),
 		Name:     getEnv("DB_NAME", "sandbox"),
 		SSLMode:  getEnv("DB_SSLMODE", "disable"),
 		TimeZone: getEnv("DB_TIMEZONE", "UTC"),
