@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 
+	app "main/internal"
+	"main/internal/database"
 	"main/internal/sandbox/core"
 )
 
@@ -18,6 +20,17 @@ func main() {
 	}
 
 	defer apiClient.Close()
+
+	db, err := database.ConnectFromEnv(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	application, err := app.New(db, apiClient)
+	if err != nil {
+		panic(err)
+	}
+	_ = application
 
 	// sigChan := make(chan os.Signal, 1)
 	// signal.Notify(sigChan, syscall.SIGINT)
