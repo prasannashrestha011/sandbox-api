@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"log"
+	"net/http"
 
 	app "main/internal"
 	"main/internal/database"
@@ -30,7 +32,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	_ = application
+
+	log.Println("server listening on :8080")
+	if err := http.ListenAndServe(":8080", application.Router); err != nil {
+		log.Fatal(err)
+	}
 
 	// sigChan := make(chan os.Signal, 1)
 	// signal.Notify(sigChan, syscall.SIGINT)
