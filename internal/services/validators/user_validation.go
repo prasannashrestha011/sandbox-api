@@ -7,12 +7,19 @@ import (
 	"github.com/google/uuid"
 
 	"main/internal/repository/model"
+	"main/internal/types"
 )
 
 func ValidateCreateUser(user *model.User) (string, error) {
 	if user == nil {
 		return "", errors.New("user is nil")
 	}
+	role, err := ValidateRole(user.Role)
+	if err != nil {
+		return "", err
+	}
+	user.Role = role
+
 	password := strings.TrimSpace(user.Password)
 	if password == "" {
 		return "", errors.New("password is required")
@@ -27,6 +34,20 @@ func ValidateCreateUser(user *model.User) (string, error) {
 	return password, nil
 }
 
+func ValidateRole(role types.Role) (types.Role, error) {
+	normalized := types.Role(strings.ToLower(strings.TrimSpace(string(role))))
+	if normalized == "" {
+		return "", errors.New("role is required")
+	}
+
+	switch normalized {
+	case types.RoleAdmin, types.RoleUser:
+		return normalized, nil
+	default:
+		return "", errors.New("invalid role")
+	}
+}
+
 func ValidateUpdateDetails(user *model.User) error {
 	if user == nil {
 		return errors.New("user is nil")
@@ -34,8 +55,15 @@ func ValidateUpdateDetails(user *model.User) error {
 	if user.UserID == uuid.Nil {
 		return errors.New("user id is required")
 	}
-	if strings.TrimSpace(user.Fullname) == "" && strings.TrimSpace(user.Username) == "" {
+	if strings.TrimSpace(user.Fullname) == "" && strings.TrimSpace(user.Username) == "" && strings.TrimSpace(string(user.Role)) == "" {
 		return errors.New("no fields to update")
+	}
+	if strings.TrimSpace(string(user.Role)) != "" {
+		role, err := ValidateRole(user.Role)
+		if err != nil {
+			return err
+		}
+		user.Role = role
 	}
 
 	return nil

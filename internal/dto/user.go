@@ -11,6 +11,7 @@ type User struct {
 	UserID    uuid.UUID `json:"user_id,omitempty"`
 	Fullname  string    `json:"fullname,omitempty"`
 	Username  string    `json:"username,omitempty"`
+	Role      string    `json:"role,omitempty"` // "admin" or "user"
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
@@ -20,6 +21,7 @@ type CreateUserInput struct {
 	Fullname string `json:"fullname,omitempty"`
 	Username string `json:"username,omitempty"`
 	Password string `json:"password,omitempty"` // plain text, hashed in service before storage
+	Role     string `json:"role,omitempty"`     // "admin" or "user"
 }
 
 // UpdateUserInput captures profile updates.
@@ -27,6 +29,7 @@ type UpdateUserInput struct {
 	UserID   uuid.UUID `json:"user_id,omitempty"`
 	Fullname string    `json:"fullname,omitempty"`
 	Username string    `json:"username,omitempty"`
+	Role     string    `json:"role,omitempty"` // "admin" or "user"
 }
 
 // UserCreate is used internally when storing a new user.
@@ -34,6 +37,7 @@ type UserCreate struct {
 	Fullname     string `json:"fullname,omitempty"`
 	Username     string `json:"username,omitempty"`
 	PasswordHash string `json:"password_hash,omitempty"`
+	Role         string `json:"role,omitempty"` // "admin" or "user"
 }
 
 // UserPasswordUpdate is used internally when updating the password.

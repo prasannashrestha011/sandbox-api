@@ -13,6 +13,7 @@ import (
 // Claims holds JWT payload with a user identifier.
 type Claims struct {
 	UserID string `json:"user_id"`
+	Role   string `json:"role"`
 	jwt.RegisteredClaims
 }
 
@@ -47,7 +48,7 @@ func ConfigFromEnv() (*Config, error) {
 }
 
 // IssueToken creates a signed JWT for the given user.
-func (c *Config) IssueToken(userID uuid.UUID) (string, error) {
+func (c *Config) IssueToken(userID uuid.UUID, role string) (string, error) {
 	if userID == uuid.Nil {
 		return "", errors.New("userID must not be nil")
 	}
@@ -55,6 +56,7 @@ func (c *Config) IssueToken(userID uuid.UUID) (string, error) {
 	now := time.Now()
 	claims := Claims{
 		UserID: userID.String(),
+		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(c.TTL)),
@@ -84,8 +86,8 @@ func (c *Config) ValidateToken(tokenString string) (*Claims, error) {
 }
 
 // SetAuthCookie issues a JWT and attaches it as an HttpOnly cookie.
-func (c *Config) SetAuthCookie(w http.ResponseWriter, userID uuid.UUID) error {
-	token, err := c.IssueToken(userID)
+func (c *Config) SetAuthCookie(w http.ResponseWriter, userID uuid.UUID, role string) error {
+	token, err := c.IssueToken(userID, role)
 	if err != nil {
 		return err
 	}

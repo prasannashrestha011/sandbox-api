@@ -81,7 +81,7 @@ func (c *UserController) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := c.jwtConfig.SetAuthCookie(w, user.UserID); err != nil {
+	if err := c.jwtConfig.SetAuthCookie(w, user.UserID, string(user.Role)); err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to issue token"})
 		return
 	}

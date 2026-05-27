@@ -3,6 +3,7 @@ package mapper
 import (
 	"main/internal/dto"
 	"main/internal/repository/model"
+	"main/internal/types"
 )
 
 // UserModelToDTO maps a domain user to an API-safe DTO.
@@ -15,6 +16,7 @@ func UserModelToDTO(user *model.User) *dto.User {
 		UserID:    user.UserID,
 		Fullname:  user.Fullname,
 		Username:  user.Username,
+		Role:      string(user.Role),
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}
@@ -42,6 +44,7 @@ func CreateUserInputToModel(input *dto.CreateUserInput) *model.User {
 		Fullname: input.Fullname,
 		Username: input.Username,
 		Password: input.Password,
+		Role:     types.Role(input.Role),
 	}
 }
 
@@ -55,5 +58,6 @@ func UpdateUserInputToModel(input *dto.UpdateUserInput) *model.User {
 		UserID:   input.UserID,
 		Fullname: input.Fullname,
 		Username: input.Username,
+		Role:     types.Role(input.Role),
 	}
 }
