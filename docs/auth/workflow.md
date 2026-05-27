@@ -1,0 +1,1 @@
+![Auth workflow](../assets/authworkflow.svg)
