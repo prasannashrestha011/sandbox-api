@@ -2,11 +2,14 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
+	request_context "main/internal/context"
 	"main/internal/dto"
 	"main/internal/mapper"
 	jwtutil "main/internal/security/jwt"
@@ -14,12 +17,12 @@ import (
 )
 
 type UserController struct {
-	service   services.UserService
-	jwtConfig *jwtutil.Config
+	userService services.UserService
+	authService services.AuthService
 }
 
-func NewUserController(service services.UserService, jwtConfig *jwtutil.Config) *UserController {
-	return &UserController{service: service, jwtConfig: jwtConfig}
+func NewUserController(userService services.UserService, authService services.AuthService) *UserController {
+	return &UserController{userService: userService, authService: authService}
 }
 
 func (c *UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +38,7 @@ func (c *UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := c.service.Create(r.Context(), user); err != nil {
+	if err := c.userService.Create(r.Context(), user); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
@@ -49,7 +52,7 @@ func (c *UserController) GetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := c.service.GetByID(r.Context(), id)
+	user, err := c.userService.GetByID(r.Context(), id)
 	if err != nil {
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "user not found"})
 		return
@@ -59,7 +62,13 @@ func (c *UserController) GetUserByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *UserController) ListUsers(w http.ResponseWriter, r *http.Request) {
-	users, err := c.service.List(r.Context())
+	userID, ok := request_context.UserID(r.Context())
+	if !ok {
+		http.Error(w, "invalid user context", http.StatusUnauthorized)
+		return
+	}
+	log.Println("user id from request context", userID)
+	users, err := c.userService.List(r.Context())
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to list users"})
 		return
@@ -75,20 +84,43 @@ func (c *UserController) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := c.service.Authenticate(r.Context(), input.Username, input.Password)
+	user, accessToken, refreshToken, err := c.authService.Authenticate(r.Context(), input.Username, input.Password)
 	if err != nil {
 		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "invalid credentials"})
 		return
 	}
 
-	if err := c.jwtConfig.SetAuthCookie(w, user.UserID, string(user.Role)); err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to issue token"})
-		return
-	}
-
+	jwtutil.JwtUtil.SetAuthCookie(w, accessToken, refreshToken)
 	writeJSON(w, http.StatusOK, dto.AuthResult{
 		User: *mapper.UserModelToDTO(user),
 	})
+}
+
+func (c *UserController) RefreshAccessToken(w http.ResponseWriter, r *http.Request) {
+	id, ok := parseUUIDParam(w, r, "id")
+	if !ok {
+		return
+	}
+
+	cookie, err := r.Cookie("refresh_token")
+	if err != nil || cookie.Value == "" {
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		return
+	}
+	refreshToken := cookie.Value
+
+	accessToken, err := c.authService.RefreshAccessToken(r.Context(), id, refreshToken)
+	if err != nil {
+		if errors.Is(err, services.ErrUnauthorized) {
+			writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+			return
+		}
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return
+	}
+
+	jwtutil.JwtUtil.SetAuthCookie(w, accessToken, refreshToken)
+	writeJSON(w, http.StatusOK, map[string]interface{}{"message": "access token refreshed", "status": true})
 }
 
 func (c *UserController) UpdateUser(w http.ResponseWriter, r *http.Request) {
@@ -110,12 +142,12 @@ func (c *UserController) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := c.service.UpdateDetails(r.Context(), user); err != nil {
+	if err := c.userService.UpdateDetails(r.Context(), user); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
 
-	updated, err := c.service.GetByID(r.Context(), id)
+	updated, err := c.userService.GetByID(r.Context(), id)
 	if err != nil {
 		writeJSON(w, http.StatusOK, map[string]string{"status": "updated"})
 		return
@@ -141,7 +173,7 @@ func (c *UserController) UpdatePassword(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if err := c.service.UpdatePassword(r.Context(), id, input.OldPassword, input.NewPassword); err != nil {
+	if err := c.authService.UpdatePassword(r.Context(), id, input.OldPassword, input.NewPassword); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
@@ -155,7 +187,7 @@ func (c *UserController) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := c.service.Delete(r.Context(), id); err != nil {
+	if err := c.userService.Delete(r.Context(), id); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
