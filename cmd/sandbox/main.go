@@ -8,6 +8,7 @@ import (
 	app "main/internal"
 	"main/internal/database"
 	"main/internal/sandbox/core"
+	jwtutil "main/internal/security/jwt"
 )
 
 func main() {
@@ -25,6 +26,10 @@ func main() {
 
 	db, err := database.ConnectFromEnv(ctx)
 	if err != nil {
+		panic(err)
+	}
+
+	if err := jwtutil.InitFromEnv(); err != nil {
 		panic(err)
 	}
 
