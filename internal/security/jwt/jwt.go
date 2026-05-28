@@ -4,35 +4,67 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"sync"
 	"time"
+
+	"main/internal/types"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
-// Claims holds JWT payload with a user identifier.
-type Claims struct {
-	UserID string `json:"user_id"`
-	Role   string `json:"role"`
-	jwt.RegisteredClaims
-}
-
 // Config holds JWT signing parameters.
+// Initialize this once in main via InitFromEnv() (or Init()) then use Get()/Must() everywhere.
 type Config struct {
 	Secret        string
 	TTL           time.Duration
+	RefreshTTL    time.Duration
 	SecureCookies bool
 }
 
-// ConfigFromEnv builds a Config from environment variables.
-// Requires JWT_SECRET. Optionally reads JWT_TTL (default 24h)
-// and JWT_COOKIE_SECURE (default false).
+var (
+	JwtUtil  *Config
+	initOnce sync.Once
+	initErr  error
+)
+
+// Init initializes the package-global JWT config exactly once.
+// Subsequent calls are no-ops and will return the first init error (if any).
+func Init(c *Config) error {
+	initOnce.Do(func() {
+		if c == nil {
+			initErr = errors.New("jwt config is nil")
+			return
+		}
+		if c.Secret == "" {
+			initErr = errors.New("jwt secret must not be empty")
+			return
+		}
+		if c.TTL <= 0 {
+			c.TTL = 24 * time.Hour
+		}
+		if c.RefreshTTL <= 0 {
+			c.RefreshTTL = 7 * c.TTL
+		}
+		JwtUtil = c
+	})
+	return initErr
+}
+
+// InitFromEnv loads config from env and initializes the package-global config once.
+func InitFromEnv() error {
+	c, err := ConfigFromEnv()
+	if err != nil {
+		return err
+	}
+	return Init(c)
+}
+
 func ConfigFromEnv() (*Config, error) {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		return nil, errors.New("JWT_SECRET is not set")
+		return nil, errors.New("JWT SECRET is not set")
 	}
-
 	ttl := 24 * time.Hour
 	if raw := os.Getenv("JWT_TTL"); raw != "" {
 		if parsed, err := time.ParseDuration(raw); err == nil {
@@ -40,75 +72,105 @@ func ConfigFromEnv() (*Config, error) {
 		}
 	}
 
+	refreshTTL := ttl * 2
+	if raw := os.Getenv("JWT_REFRESH_TTL"); raw != "" {
+		if parsed, err := time.ParseDuration(raw); err == nil {
+			refreshTTL = parsed
+		}
+	}
 	return &Config{
 		Secret:        secret,
 		TTL:           ttl,
+		RefreshTTL:    refreshTTL,
 		SecureCookies: os.Getenv("JWT_COOKIE_SECURE") == "true",
 	}, nil
 }
 
-// IssueToken creates a signed JWT for the given user.
-func (c *Config) IssueToken(userID uuid.UUID, role string) (string, error) {
+func (c *Config) IssueAccessToken(userID uuid.UUID, role string) (string, error) {
 	if userID == uuid.Nil {
 		return "", errors.New("userID must not be nil")
 	}
-
 	now := time.Now()
-	claims := Claims{
+	return sign(types.Claims{
 		UserID: userID.String(),
 		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(c.TTL)),
 		},
-	}
-
-	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).
-		SignedString([]byte(c.Secret))
+	}, c.Secret)
 }
 
-// ValidateToken parses and validates a JWT, returning its claims.
-func (c *Config) ValidateToken(tokenString string) (*Claims, error) {
+func (c *Config) IssueToken(userID uuid.UUID, role string) (access, refresh string, err error) {
+	if userID == uuid.Nil {
+		return "", "", errors.New("userID must not be nil")
+	}
+	now := time.Now()
+
+	access, accessErr := sign(types.Claims{
+		UserID: userID.String(),
+		Role:   role,
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(now.Add(c.TTL)),
+		},
+	}, c.Secret)
+
+	refresh, refreshErr := sign(types.RefreshClaims{
+		UserID: userID.String(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(now.Add(c.RefreshTTL)),
+		},
+	}, c.Secret)
+
+	return access, refresh, errors.Join(accessErr, refreshErr)
+}
+
+func (c *Config) ValidateToken(tokenString string) (*types.Claims, error) {
 	if tokenString == "" {
 		return nil, errors.New("token must not be empty")
 	}
-
-	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(tokenString, claims, c.keyFunc)
+	claims := &types.Claims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, keyFunc(c.Secret))
 	if err != nil {
 		return nil, err
 	}
 	if !token.Valid {
 		return nil, errors.New("token is invalid")
 	}
-
 	return claims, nil
 }
 
-// SetAuthCookie issues a JWT and attaches it as an HttpOnly cookie.
-func (c *Config) SetAuthCookie(w http.ResponseWriter, userID uuid.UUID, role string) error {
-	token, err := c.IssueToken(userID, role)
-	if err != nil {
-		return err
-	}
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "auth_token",
-		Value:    token,
+func (c *Config) SetAuthCookie(w http.ResponseWriter, accessToken, refreshToken string) {
+	base := http.Cookie{
 		Path:     "/",
-		MaxAge:   int(c.TTL.Seconds()),
 		HttpOnly: true,
 		Secure:   c.SecureCookies,
 		SameSite: http.SameSiteLaxMode,
-	})
+	}
+	a := base
+	a.Name, a.Value, a.MaxAge = "auth_token", accessToken, int(c.TTL.Seconds())
 
-	return nil
+	r := base
+	r.Name, r.Value, r.MaxAge = "refresh_token", refreshToken, int(c.RefreshTTL.Seconds())
+
+	http.SetCookie(w, &a)
+	http.SetCookie(w, &r)
 }
 
-// keyFunc returns the signing key after validating the algorithm.
-func (c *Config) keyFunc(token *jwt.Token) (any, error) {
-	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-		return nil, errors.New("unexpected signing method")
+// sign is the single internal helper for creating signed JWTs.
+func sign(claims jwt.Claims, secret string) (string, error) {
+	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).
+		SignedString([]byte(secret))
+}
+
+// keyFunc returns a jwt.Keyfunc closed over the provided secret.
+func keyFunc(secret string) jwt.Keyfunc {
+	return func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+		return []byte(secret), nil
 	}
-	return []byte(c.Secret), nil
 }
