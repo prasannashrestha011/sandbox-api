@@ -7,10 +7,10 @@ import (
 	"gorm.io/gorm"
 
 	"main/internal/controllers"
+	"main/internal/pkg"
 	"main/internal/repository"
 	"main/internal/routes"
 	"main/internal/sandbox/core"
-	jwtutil "main/internal/security/jwt"
 	"main/internal/services"
 )
 
@@ -18,12 +18,14 @@ import (
 type Repos struct {
 	SandboxRepo repository.SandboxRepository
 	UserRepo    repository.UserRepository
+	RefreshRepo repository.RefreshTokenRepository
 }
 
 // Services groups all services.
 type Services struct {
 	SandboxService services.SandboxService
 	UserService    services.UserService
+	AuthService    services.AuthService
 }
 
 // Controllers groups all controllers.
@@ -52,26 +54,24 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 	repos := Repos{
 		SandboxRepo: repository.NewSandboxRepository(db),
 		UserRepo:    repository.NewUserRepository(db),
+		RefreshRepo: repository.NewRefreshTokenRepository(db),
 	}
 
 	servicesGroup := Services{
 		SandboxService: services.NewSandboxService(repos.SandboxRepo, sandboxClient),
-		UserService:    services.NewUserService(repos.UserRepo, repository.NewRefreshTokenRepository(db)),
-	}
-
-	jwtConfig, err := jwtutil.ConfigFromEnv()
-	if err != nil {
-		return nil, err
+		UserService:    services.NewUserService(repos.UserRepo),
+		AuthService:    services.NewAuthService(repos.UserRepo, repos.RefreshRepo),
 	}
 
 	controllersGroup := Controllers{
 		SandboxController: controllers.NewSandboxController(servicesGroup.SandboxService),
-		UserController:    controllers.NewUserController(servicesGroup.UserService, jwtConfig),
+		UserController:    controllers.NewUserController(servicesGroup.UserService, servicesGroup.AuthService),
 	}
 
 	router := chi.NewRouter()
 	routes.RegisterSandboxRoutes(router, controllersGroup.SandboxController)
 	routes.RegisterUserRoutes(router, controllersGroup.UserController)
+	pkg.NewWebSocket(router)
 
 	return &App{
 		Repos:       repos,
