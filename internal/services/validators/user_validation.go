@@ -123,3 +123,14 @@ func ValidateUsernameExistsInput(username string) (string, error) {
 	}
 	return username, nil
 }
+
+func ValidateRefreshAccessTokenInputs(id uuid.UUID, refreshToken string) (string, error) {
+	if id == uuid.Nil {
+		return "", errors.New("user id is required")
+	}
+	refreshToken = strings.TrimSpace(refreshToken)
+	if refreshToken == "" {
+		return "", errors.New("refresh token is required")
+	}
+	return refreshToken, nil
+}
