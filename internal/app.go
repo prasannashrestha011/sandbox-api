@@ -62,7 +62,7 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 	}
 
 	servicesGroup := Services{
-		SandboxService:     services.NewSandboxService(repos.SandboxRepo, sandboxClient),
+		SandboxService:     services.NewSandboxService(repos.SandboxRepo, repos.DockerImageRepo, sandboxClient),
 		UserService:        services.NewUserService(repos.UserRepo),
 		AuthService:        services.NewAuthService(repos.UserRepo, repos.RefreshRepo),
 		DockerImageService: services.NewDockerImageService(repos.DockerImageRepo),
