@@ -8,15 +8,17 @@ import (
 	"github.com/moby/moby/client"
 )
 
-func PullImage(ctx context.Context, apiClient *client.Client, imageID string) {
-	_, err := apiClient.ImageInspect(ctx, imageID)
+func PullImage(ctx context.Context, apiClient *client.Client, imageTag string) error {
+	_, err := apiClient.ImageInspect(ctx, imageTag)
 	if err != nil {
-		log.Println("Pulling image: ", imageID)
-		reader, err := apiClient.ImagePull(ctx, imageID, client.ImagePullOptions{})
+		log.Println("Pulling image: ", imageTag)
+		reader, err := apiClient.ImagePull(ctx, imageTag, client.ImagePullOptions{})
 		if err != nil {
-			panic(err)
+			log.Println("docker: image tag not found")
+			return err
 		}
 		io.Copy(io.Discard, reader)
 
 	}
+	return nil
 }
