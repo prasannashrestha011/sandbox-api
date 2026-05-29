@@ -1,7 +1,7 @@
 package model
 
 import (
-	sandbox_type "main/internal/sandbox/types"
+	sandbox_type "main/internal/types"
 	"time"
 
 	"github.com/google/uuid"

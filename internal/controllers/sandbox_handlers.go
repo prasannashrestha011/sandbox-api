@@ -9,8 +9,8 @@ import (
 	"github.com/google/uuid"
 
 	"main/internal/mapper"
-	sandbox_type "main/internal/sandbox/types"
 	"main/internal/services"
+	sandbox_type "main/internal/types"
 )
 
 type SandboxController struct {
