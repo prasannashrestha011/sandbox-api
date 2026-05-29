@@ -8,7 +8,7 @@ import (
 	"main/internal/repository"
 	"main/internal/repository/model"
 	"main/internal/sandbox/core"
-	sandbox_type "main/internal/sandbox/types"
+	sandbox_type "main/internal/types"
 )
 
 // SandboxService exposes business operations for sandbox sessions.
@@ -22,12 +22,12 @@ type SandboxService interface {
 }
 
 type sandboxService struct {
-	repo          repository.SandboxRepository
+	repo          repository.DockerRepository
 	sandboxClient core.SandboxClient
 }
 
 // NewSandboxService returns a service backed by a SandboxRepository.
-func NewSandboxService(repo repository.SandboxRepository, sandboxClient core.SandboxClient) SandboxService {
+func NewSandboxService(repo repository.DockerRepository, sandboxClient core.SandboxClient) SandboxService {
 	return &sandboxService{repo: repo, sandboxClient: sandboxClient}
 }
 
