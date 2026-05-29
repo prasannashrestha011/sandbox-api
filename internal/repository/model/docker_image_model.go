@@ -9,10 +9,10 @@ import (
 )
 
 type DockerImage struct {
-	ID          uuid.UUID `gorm:"primaryKey"`
-	ImageTag    string    `gorm:"unique;not null"`
-	CreatedByID uuid.UUID `gorm:"not null;index"`
-	CreatedBy   User      `gorm:"foreignKey:CreatedByID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ID          string `gorm:"primaryKey;type:uuid"`
+	ImageTag    string `gorm:"unique;not null"`
+	CreatedByID string `gorm:"not null;index;type:uuid"`
+	CreatedBy   User   `gorm:"foreignKey:CreatedByID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
@@ -22,6 +22,6 @@ func (*DockerImage) TableName() string {
 }
 func (d *DockerImage) BeforeCreate(tx *gorm.DB) (err error) {
 	log.Println("generating the uuid")
-	d.ID = uuid.New()
+	d.ID = uuid.New().String()
 	return
 }
