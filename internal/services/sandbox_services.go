@@ -22,12 +22,12 @@ type SandboxService interface {
 }
 
 type sandboxService struct {
-	repo          repository.DockerRepository
+	repo          repository.SandboxRepository
 	sandboxClient core.SandboxClient
 }
 
 // NewSandboxService returns a service backed by a SandboxRepository.
-func NewSandboxService(repo repository.DockerRepository, sandboxClient core.SandboxClient) SandboxService {
+func NewSandboxService(repo repository.SandboxRepository, sandboxClient core.SandboxClient) SandboxService {
 	return &sandboxService{repo: repo, sandboxClient: sandboxClient}
 }
 

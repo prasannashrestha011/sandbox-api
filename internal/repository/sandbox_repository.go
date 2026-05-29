@@ -11,7 +11,7 @@ import (
 )
 
 // SandboxRepository defines persistence methods for sandbox sessions.
-type DockerRepository interface {
+type SandboxRepository interface {
 	Create(ctx context.Context, sandbox *model.Sandbox) error
 	FindByID(ctx context.Context, id uuid.UUID) (*model.Sandbox, error)
 	FindBySessionID(ctx context.Context, sessionID uuid.UUID) (*model.Sandbox, error)
@@ -25,7 +25,7 @@ type dockerRepository struct {
 }
 
 // NewSandboxRepository returns a GORM-backed SandboxRepository.
-func NewDockerRepository(db *gorm.DB) DockerRepository {
+func NewSandboxRepository(db *gorm.DB) SandboxRepository {
 	return &dockerRepository{db: db}
 }
 
