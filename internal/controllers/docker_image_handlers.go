@@ -29,7 +29,7 @@ func (c *DockerImageController) CreateImage(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if err := c.service.CreateImage(req.ImageTag, userID); err != nil {
+	if err := c.service.CreateImage(req.ImageTag, userID.String()); err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to create docker image record"})
 		return
 	}
