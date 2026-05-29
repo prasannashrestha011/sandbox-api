@@ -32,3 +32,8 @@ type CreateRequest struct {
 type UpdateStatusRequest struct {
 	Status SandboxState `json:"status"`
 }
+
+type CreateImageRequest struct {
+	// Docker Image ID
+	ImageTag string `json:"image_tag,omitempty"`
+}
