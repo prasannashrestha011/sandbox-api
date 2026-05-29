@@ -3,6 +3,7 @@ package container
 import (
 	"context"
 	"fmt"
+	"main/internal/pkg"
 	"main/internal/repository/model"
 
 	"github.com/moby/moby/api/types/container"
@@ -10,9 +11,10 @@ import (
 )
 
 func CreateContainer(ctx context.Context, apiClient *client.Client, req *model.Sandbox) (string, error) {
+	req.ContainerName, _ = pkg.GenRandomString(12)
 	resp, err := apiClient.ContainerCreate(ctx, client.ContainerCreateOptions{
 		Config: &container.Config{
-			Image:     req.ImageID,
+			Image:     req.Image.ImageTag,
 			Cmd:       []string{"sleep", "infinity"},
 			Tty:       true,
 			OpenStdin: true,
@@ -28,7 +30,7 @@ func CreateContainer(ctx context.Context, apiClient *client.Client, req *model.S
 		},
 		NetworkingConfig: nil,
 		Platform:         nil,
-		Name:             fmt.Sprintf("sandbox_%s", req.UserID),
+		Name:             fmt.Sprintf("sandbox_%s", req.ContainerName),
 	})
 	if err != nil {
 		return "", err
