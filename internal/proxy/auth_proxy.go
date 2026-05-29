@@ -7,6 +7,7 @@ import (
 
 	request_context "main/internal/context"
 	jwtutil "main/internal/security/jwt"
+	"main/internal/types"
 )
 
 func AuthMiddleware(next http.Handler) http.Handler {
@@ -29,6 +30,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		ctx = request_context.WithUserID(ctx, claim.UserID)
+		ctx = request_context.WithRole(ctx, types.Role(claim.Role))
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
