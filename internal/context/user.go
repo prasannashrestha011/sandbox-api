@@ -2,7 +2,7 @@ package request_context
 
 import (
 	"context"
-	"log"
+	"main/internal/types"
 
 	"github.com/google/uuid"
 )
@@ -11,8 +11,11 @@ import (
 
 // Sets user id in request context
 func WithUserID(ctx context.Context, userID string) context.Context {
-	log.Println("Setting user context", userID)
 	return context.WithValue(ctx, userIDKey, userID)
+}
+
+func WithRole(ctx context.Context, role types.Role) context.Context {
+	return context.WithValue(ctx, userRoleKey, role)
 }
 
 // getter
@@ -28,4 +31,9 @@ func UserID(ctx context.Context) (uuid.UUID, bool) {
 		return uuid.Nil, false
 	}
 	return id, ok
+}
+
+func UserRole(ctx context.Context) (types.Role, bool) {
+	role, ok := ctx.Value(userRoleKey).(types.Role)
+	return role, ok
 }
