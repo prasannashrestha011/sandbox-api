@@ -38,7 +38,11 @@ func (c *dockerSandboxClient) Create(ctx context.Context, req *model.Sandbox) er
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, req.SessionTimeout)
 	defer cancel()
 
-	image.PullImage(ctxWithTimeout, c.apiClient, req.ImageID)
+	log.Println("Image tag: ", req.Image.ImageTag)
+	err := image.PullImage(ctxWithTimeout, c.apiClient, req.Image.ImageTag)
+	if err != nil {
+		return err
+	}
 	containerID, err := container.CreateContainer(ctxWithTimeout, c.apiClient, req)
 	if err != nil {
 		return err
