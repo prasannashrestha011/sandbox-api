@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"main/internal/repository/model"
-	sandbox_type "main/internal/sandbox/types"
+	sandbox_type "main/internal/types"
 )
 
 // SandboxCreateRequestToModel maps an API create request to a persistence model.
