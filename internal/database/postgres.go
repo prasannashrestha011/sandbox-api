@@ -56,7 +56,7 @@ func OpenPostgres(cfg PostgresConfig) (*gorm.DB, error) {
 
 // AutoMigrate runs the schema migrations for persistence models.
 func AutoMigrate(db *gorm.DB) error {
-	return db.AutoMigrate(&model.Sandbox{}, &model.User{}, &model.RefreshToken{})
+	return db.AutoMigrate(&model.Sandbox{}, &model.DockerImage{}, &model.User{}, &model.RefreshToken{})
 }
 
 func getEnv(key, fallback string) string {
