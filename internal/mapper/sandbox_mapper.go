@@ -1,17 +1,24 @@
 package mapper
 
 import (
+	"context"
+	"net/http"
 	"time"
 
+	request_context "main/internal/context"
 	"main/internal/repository/model"
 	sandbox_type "main/internal/types"
 )
 
 // SandboxCreateRequestToModel maps an API create request to a persistence model.
-func SandboxCreateRequestToModel(req sandbox_type.CreateRequest, now time.Time) *model.Sandbox {
+func SandboxCreateRequestToModel(req sandbox_type.CreateRequest, ctx context.Context, now time.Time) (*model.Sandbox, error) {
 	expiresAt := now.Add(req.SessionTimeout)
+	userID, ok := request_context.UserID(ctx)
+	if !ok {
+		return nil, http.ErrNoCookie
+	}
 	return &model.Sandbox{
-		UserID:         req.UserID,
+		UserID:         userID.String(),
 		Environment:    req.Environment,
 		ImageID:        req.ImageID,
 		MemoryLimit:    req.MemoryLimit,
@@ -22,7 +29,7 @@ func SandboxCreateRequestToModel(req sandbox_type.CreateRequest, now time.Time) 
 		NetworkMode:    req.NetworkMode,
 		Status:         sandbox_type.StateActive,
 		ExpiresAt:      expiresAt,
-	}
+	}, nil
 }
 
 // SandboxModelToCreateResponse maps a sandbox model to the create response payload.

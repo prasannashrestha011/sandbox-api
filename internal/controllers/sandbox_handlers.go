@@ -23,12 +23,17 @@ func NewSandboxController(service services.SandboxService) *SandboxController {
 
 func (c *SandboxController) CreateSandbox(w http.ResponseWriter, r *http.Request) {
 	var req sandbox_type.CreateRequest
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 		return
 	}
 
-	sandbox := mapper.SandboxCreateRequestToModel(req, time.Now())
+	sandbox, err := mapper.SandboxCreateRequestToModel(req, r.Context(), time.Now())
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "failed to map request to model"})
+		return
+	}
 
 	if err := c.service.Create(r.Context(), sandbox); err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to create sandbox"})

@@ -13,7 +13,8 @@ type Sandbox struct {
 	ID             uuid.UUID     `gorm:"type:uuid;primaryKey"`
 	UserID         string        `gorm:"not null;index"`
 	Environment    string        `gorm:"not null"`
-	ImageID        string        `gorm:"not null"`
+	ImageID        string        `gorm:"type:uuid;not null"`
+	Image          DockerImage   `gorm:"foreignKey:ImageID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	MemoryLimit    int64         `gorm:"not null"`
 	CPULimit       int64         `gorm:"not null"`
 	PidsLimit      int64         `gorm:"not null"`
@@ -21,10 +22,11 @@ type Sandbox struct {
 	ExecTimeout    time.Duration `gorm:"not null"`
 	NetworkMode    string        `gorm:"not null"`
 
-	ContainerID string                    `gorm:"index"`
-	SessionID   uuid.UUID                 `gorm:"type:uuid;not null;uniqueIndex"`
-	Status      sandbox_type.SandboxState `gorm:"type:varchar(16);not null"`
-	ExpiresAt   time.Time                 `gorm:"not null;index"`
+	ContainerName string                    `gorm:"not null;uniqueIndex"`
+	ContainerID   string                    `gorm:"index"`
+	SessionID     uuid.UUID                 `gorm:"type:uuid;not null;uniqueIndex"`
+	Status        sandbox_type.SandboxState `gorm:"type:varchar(16);not null"`
+	ExpiresAt     time.Time                 `gorm:"not null;index"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time

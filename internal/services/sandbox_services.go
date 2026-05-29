@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"log"
 
 	"github.com/google/uuid"
 
@@ -23,23 +24,34 @@ type SandboxService interface {
 
 type sandboxService struct {
 	repo          repository.SandboxRepository
+	imageRepo     repository.DockerImageRepository
 	sandboxClient core.SandboxClient
 }
 
 // NewSandboxService returns a service backed by a SandboxRepository.
-func NewSandboxService(repo repository.SandboxRepository, sandboxClient core.SandboxClient) SandboxService {
-	return &sandboxService{repo: repo, sandboxClient: sandboxClient}
+func NewSandboxService(repo repository.SandboxRepository, imageRepo repository.DockerImageRepository, sandboxClient core.SandboxClient) SandboxService {
+	return &sandboxService{repo: repo, imageRepo: imageRepo, sandboxClient: sandboxClient}
 }
 
 func (s *sandboxService) Create(ctx context.Context, sandbox *model.Sandbox) error {
 	// call the sandbox client, the client returns the container id that to be stored in the database.
 	//create method populates the model
-	err := s.sandboxClient.Create(ctx, sandbox)
+	log.Println("Fetching image details for image ID: ", sandbox.ImageID)
+	image, err := s.imageRepo.FindByID(ctx, sandbox.ImageID)
 	if err != nil {
+		return err
+	}
+	sandbox.Image = *image
+
+	log.Println("Creating a sandbox")
+	err = s.sandboxClient.Create(ctx, sandbox)
+	if err != nil {
+		log.Println("Sandbox client: ", err.Error())
 		return err
 	}
 	err = s.repo.Create(ctx, sandbox)
 	if err != nil {
+		log.Println("Sandbox repository: ", err.Error())
 		return err
 	}
 

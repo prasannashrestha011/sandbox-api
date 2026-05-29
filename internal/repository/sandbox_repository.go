@@ -30,7 +30,7 @@ func NewSandboxRepository(db *gorm.DB) SandboxRepository {
 }
 
 func (r *dockerRepository) Create(ctx context.Context, sandbox *model.Sandbox) error {
-	return r.db.WithContext(ctx).Model(&model.Sandbox{}).Create(sandbox).Error
+	return r.db.WithContext(ctx).Model(&model.Sandbox{}).Omit("Image").Create(sandbox).Error
 }
 
 func (r *dockerRepository) FindByID(ctx context.Context, id uuid.UUID) (*model.Sandbox, error) {
