@@ -4,13 +4,11 @@ import (
 	"context"
 	"main/internal/repository"
 	"main/internal/repository/model"
-
-	"github.com/google/uuid"
 )
 
 type DockerImageService interface {
 	// CreateImage creates a new Docker image record in the database.
-	CreateImage(imageID string, userID uuid.UUID) error
+	CreateImage(imageTag string, userID string) error
 }
 
 type dockerImageService struct {
@@ -21,9 +19,9 @@ func NewDockerImageService(repo repository.DockerImageRepository) DockerImageSer
 	return &dockerImageService{repo: repo}
 }
 
-func (s *dockerImageService) CreateImage(imageID string, userID uuid.UUID) error {
+func (s *dockerImageService) CreateImage(imageTag string, userID string) error {
 	dockerImage := &model.DockerImage{
-		ImageTag:    imageID,
+		ImageTag:    imageTag,
 		CreatedByID: userID,
 	}
 	return s.repo.Create(context.Background(), dockerImage)
