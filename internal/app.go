@@ -16,7 +16,7 @@ import (
 
 // Repos groups all repositories.
 type Repos struct {
-	SandboxRepo repository.SandboxRepository
+	DockerRepo  repository.DockerRepository
 	UserRepo    repository.UserRepository
 	RefreshRepo repository.RefreshTokenRepository
 }
@@ -31,6 +31,7 @@ type Services struct {
 // Controllers groups all controllers.
 type Controllers struct {
 	SandboxController *controllers.SandboxController
+	DockerController  *controllers.DockerController
 	UserController    *controllers.UserController
 }
 
@@ -52,19 +53,20 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 	}
 
 	repos := Repos{
-		SandboxRepo: repository.NewSandboxRepository(db),
+		DockerRepo:  repository.NewDockerRepository(db),
 		UserRepo:    repository.NewUserRepository(db),
 		RefreshRepo: repository.NewRefreshTokenRepository(db),
 	}
 
 	servicesGroup := Services{
-		SandboxService: services.NewSandboxService(repos.SandboxRepo, sandboxClient),
+		SandboxService: services.NewSandboxService(repos.DockerRepo, sandboxClient),
 		UserService:    services.NewUserService(repos.UserRepo),
 		AuthService:    services.NewAuthService(repos.UserRepo, repos.RefreshRepo),
 	}
 
 	controllersGroup := Controllers{
 		SandboxController: controllers.NewSandboxController(servicesGroup.SandboxService),
+		DockerController:  controllers.NewDockerController(servicesGroup.SandboxService),
 		UserController:    controllers.NewUserController(servicesGroup.UserService, servicesGroup.AuthService),
 	}
 
