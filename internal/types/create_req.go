@@ -6,7 +6,7 @@ import (
 
 // CreateRequest payload for the sanbox creation
 type CreateRequest struct {
-	UserID string `json:"user_id,omitempty"`
+	// UserID string `json:"user_id,omitempty"`
 	// Language Environment
 	Environment string `json:"environment,omitempty"`
 	// Docker Image ID
