@@ -79,6 +79,8 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 	}
 
 	router := chi.NewRouter()
+	router.Use(proxy.ResponseWriterMiddleware)
+	router.Use(proxy.ErrorMiddleware)
 	router.Use(proxy.RateLimiterMiddleware)
 	router.Get("/", controllersGroup.PingerController.Ping)
 	routes.RegisterSandboxRoutes(router, controllersGroup.SandboxController)
