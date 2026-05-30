@@ -4,22 +4,22 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"main/internal/controllers"
-	"main/internal/proxy"
+	"main/internal/response"
 )
 
 // RegisterUserRoutes wires user endpoints into the router.
 func RegisterUserRoutes(r chi.Router, controller *controllers.UserController) {
 	r.Route("/users", func(ur chi.Router) {
-		ur.Use(proxy.AuthMiddleware)
-		ur.Get("/", controller.ListUsers)
-		ur.Get("/{id}", controller.GetUserByID)
-		ur.Patch("/{id}", controller.UpdateUser)
-		ur.Delete("/{id}", controller.DeleteUser)
+		response.WrapGet(ur, "/", controller.ListUsers)
+		response.WrapGet(ur, "/{id}", controller.GetUserByID)
+		response.WrapPatch(ur, "/{id}", controller.UpdateUser)
+		response.WrapDelete(ur, "/{id}", controller.DeleteUser)
 	})
 	r.Route("/auth", func(ar chi.Router) {
-		ar.Post("/login", controller.Login)
-		ar.Post("/", controller.CreateUser)
-		ar.Post("/{id}/refresh", controller.RefreshAccessToken)
-		ar.Patch("/{id}/password", controller.UpdatePassword)
+		response.WrapPost(ar, "/register", controller.CreateUser)
+		response.WrapPost(ar, "/login", controller.Login)
+		response.WrapPost(ar, "/", controller.CreateUser)
+		response.WrapPost(ar, "/{id}/refresh", controller.RefreshAccessToken)
+		response.WrapPatch(ar, "/{id}/password", controller.UpdatePassword)
 	})
 }
