@@ -9,6 +9,7 @@ require (
 	github.com/moby/moby/api v1.54.2
 	github.com/moby/moby/client v0.4.1
 	golang.org/x/crypto v0.31.0
+	golang.org/x/time v0.11.0
 )
 
 require (
