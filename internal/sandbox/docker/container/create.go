@@ -19,6 +19,9 @@ func CreateContainer(ctx context.Context, apiClient *client.Client, req *model.S
 			Tty:       true,
 			OpenStdin: true,
 			StdinOnce: false,
+			Labels: map[string]string{
+				"app": "sandbox",
+			},
 		},
 		HostConfig: &container.HostConfig{
 			NetworkMode: container.NetworkMode(req.NetworkMode),
