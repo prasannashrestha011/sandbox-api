@@ -8,6 +8,7 @@ import (
 
 	"main/internal/controllers"
 	"main/internal/pkg"
+	"main/internal/proxy"
 	"main/internal/repository"
 	"main/internal/routes"
 	"main/internal/sandbox/core"
@@ -31,10 +32,12 @@ type Services struct {
 }
 
 // Controllers groups all controllers.
+
 type Controllers struct {
 	SandboxController     *controllers.SandboxController
 	UserController        *controllers.UserController
 	DockerImageController *controllers.DockerImageController
+	PingerController      *controllers.PingerController
 }
 
 // App wires repositories, services, controllers, and routes.
@@ -72,9 +75,12 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		SandboxController:     controllers.NewSandboxController(servicesGroup.SandboxService),
 		UserController:        controllers.NewUserController(servicesGroup.UserService, servicesGroup.AuthService),
 		DockerImageController: controllers.NewDockerImageController(servicesGroup.DockerImageService),
+		PingerController:      controllers.NewPingerController(),
 	}
 
 	router := chi.NewRouter()
+	router.Use(proxy.RateLimiterMiddleware)
+	router.Get("/", controllersGroup.PingerController.Ping)
 	routes.RegisterSandboxRoutes(router, controllersGroup.SandboxController)
 	routes.RegisterUserRoutes(router, controllersGroup.UserController)
 	routes.RegisterDockerImageRoutes(router, controllersGroup.DockerImageController)
