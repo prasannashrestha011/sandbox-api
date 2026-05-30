@@ -15,6 +15,7 @@ import (
 // SandboxClient defines sandbox lifecycle operations.
 type SandboxClient interface {
 	Create(ctx context.Context, req *model.Sandbox) error
+	CleanUp(ctx context.Context) error
 	Close() error
 }
 
@@ -56,6 +57,44 @@ func (c *dockerSandboxClient) Create(ctx context.Context, req *model.Sandbox) er
 	sessionID, _ := uuid.NewUUID()
 	req.SessionID = sessionID
 	req.ContainerID = containerID
+	return nil
+}
+func (c *dockerSandboxClient) CleanUp(ctx context.Context) error {
+	result, err := c.apiClient.ContainerList(ctx, client.ContainerListOptions{All: true})
+	if err != nil {
+		log.Println("Clean up func: ", err.Error())
+		return err
+	}
+
+	imageIDs := make(map[string]struct{})
+	//Remove containers labeled with "app=sandbox" and collect their image IDs for later cleanup
+	for _, ctr := range result.Items {
+
+		if ctr.Labels["app"] == "sandbox" {
+			imageIDs[ctr.ImageID] = struct{}{}
+			log.Printf("CleanUp: found container %s with image %s", ctr.ID, ctr.ImageID)
+			_, err := c.apiClient.ContainerRemove(ctx, ctr.ID, client.ContainerRemoveOptions{
+				Force: true,
+			})
+			if err != nil {
+				log.Println("Clean up func: ", err.Error())
+				return err
+			}
+		}
+
+	}
+	log.Printf("CleanUp: found %d total containers", len(result.Items))
+	// Remove images that are no longer in use
+	for imageID := range imageIDs {
+		log.Printf("CleanUp: removing image %s", imageID)
+		_, err := c.apiClient.ImageRemove(ctx, imageID, client.ImageRemoveOptions{
+			Force: true,
+		})
+		if err != nil {
+			log.Printf("Clean up func: %v", err.Error())
+			return err
+		}
+	}
 	return nil
 }
 
