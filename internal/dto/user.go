@@ -1,12 +1,12 @@
 package dto
 
 import (
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-// User is returned to callers and never contains a password.
 type User struct {
 	UserID    uuid.UUID `json:"user_id,omitempty"`
 	Fullname  string    `json:"fullname,omitempty"`
@@ -16,7 +16,7 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
-// CreateUserInput captures registration input.
+// ### CreateUserInput captures registration input. ###
 type CreateUserInput struct {
 	Fullname string `json:"fullname,omitempty"`
 	Username string `json:"username,omitempty"`
@@ -24,7 +24,54 @@ type CreateUserInput struct {
 	Role     string `json:"role,omitempty"`     // "admin" or "user"
 }
 
-// UpdateUserInput captures profile updates.
+func (r *CreateUserInput) Sanitize() {
+	r.Fullname = strings.TrimSpace(r.Fullname)
+	r.Username = strings.TrimSpace(r.Username)
+	r.Role = strings.TrimSpace(r.Role)
+}
+
+func (r *CreateUserInput) Validate() error {
+	r.Sanitize()
+	var v ValidationErrors
+	if r.Fullname == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "fullname",
+			Message: "fullname is required",
+		})
+	}
+	if r.Username == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "username",
+			Message: "username is required",
+		})
+	}
+	if r.Password == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "password",
+			Message: "password is required",
+		})
+	} else if len(r.Password) < 6 {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "password",
+			Message: "password length should be at least six characters",
+		})
+	}
+	if r.Role != "admin" && r.Role != "user" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "role",
+			Message: "role must be admin or user",
+		})
+	}
+
+	if len(v.Violations) > 0 {
+		return &v
+	}
+	return nil
+}
+
+//###
+
+// ### UpdateUserInput captures profile updates. ###
 type UpdateUserInput struct {
 	UserID   uuid.UUID `json:"user_id,omitempty"`
 	Fullname string    `json:"fullname,omitempty"`
@@ -32,7 +79,43 @@ type UpdateUserInput struct {
 	Role     string    `json:"role,omitempty"` // "admin" or "user"
 }
 
-// UserCreate is used internally when storing a new user.
+func (r *UpdateUserInput) Sanitize() {
+	r.Fullname = strings.TrimSpace(r.Fullname)
+	r.Username = strings.TrimSpace(r.Username)
+	r.Role = strings.TrimSpace(r.Role)
+}
+
+func (r *UpdateUserInput) Validate() error {
+	r.Sanitize()
+	var v ValidationErrors
+	if r.Fullname == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "fullname",
+			Message: "fullname is required",
+		})
+	}
+	if r.Username == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "username",
+			Message: "username is required",
+		})
+	}
+	if r.Role != "admin" && r.Role != "user" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "role",
+			Message: "role must be admin or user",
+		})
+	}
+
+	if len(v.Violations) > 0 {
+		return &v
+	}
+	return nil
+}
+
+//###
+
+// ### UserCreate is used internally when storing a new user. ###
 type UserCreate struct {
 	Fullname     string `json:"fullname,omitempty"`
 	Username     string `json:"username,omitempty"`
@@ -51,6 +134,34 @@ type LoginInput struct {
 	Username string `json:"username,omitempty"`
 	Password string `json:"password,omitempty"`
 }
+
+func (r *LoginInput) Sanitize() {
+	r.Username = strings.TrimSpace(r.Username)
+}
+
+func (r *LoginInput) Validate() error {
+	r.Sanitize()
+	var v ValidationErrors
+	if r.Username == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "username",
+			Message: "username is required",
+		})
+	}
+	if r.Password == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "password",
+			Message: "password is required",
+		})
+	}
+
+	if len(v.Violations) > 0 {
+		return &v
+	}
+	return nil
+}
+
+//###
 
 // AuthResult is the authentication response payload.
 type AuthResult struct {
