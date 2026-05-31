@@ -8,7 +8,6 @@ import (
 	"main/internal/dto"
 	"main/internal/response"
 	"main/internal/services"
-	"main/internal/types"
 	"net/http"
 )
 
@@ -21,7 +20,7 @@ func NewDockerImageController(service services.DockerImageService) *DockerImageC
 }
 
 func (c *DockerImageController) CreateImage(w http.ResponseWriter, r *http.Request) error {
-	var req types.CreateImageRequest
+	var req dto.CreateImageRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return domain.InvalidRequestError("invalid request body", err)
 	}
