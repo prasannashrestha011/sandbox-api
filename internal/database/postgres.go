@@ -51,7 +51,7 @@ func (c PostgresConfig) DSN() string {
 
 // OpenPostgres opens a GORM connection to Postgres.
 func OpenPostgres(cfg PostgresConfig) (*gorm.DB, error) {
-	return gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{})
+	return gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{TranslateError: true})
 }
 
 // AutoMigrate runs the schema migrations for persistence models.
