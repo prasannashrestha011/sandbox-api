@@ -6,6 +6,7 @@ import (
 
 	"main/internal/repository/model"
 	"main/internal/sandbox/docker/container"
+	sb_executil "main/internal/sandbox/docker/executil"
 	"main/internal/sandbox/docker/image"
 
 	"github.com/google/uuid"
@@ -15,6 +16,7 @@ import (
 // SandboxClient defines sandbox lifecycle operations.
 type SandboxClient interface {
 	Create(ctx context.Context, req *model.Sandbox) error
+	ExecuteCode(ctx context.Context, containerID uuid.UUID, code string) (string, error)
 	CleanUp(ctx context.Context) error
 	Close() error
 }
@@ -59,6 +61,10 @@ func (c *dockerSandboxClient) Create(ctx context.Context, req *model.Sandbox) er
 	req.ContainerID = containerID
 	return nil
 }
+func (c *dockerSandboxClient) ExecuteCode(ctx context.Context, containerID uuid.UUID, code string) (string, error) {
+	return sb_executil.ExecCreate(ctx, c.apiClient, containerID.String(), []string{"sh", "-c", code})
+}
+
 func (c *dockerSandboxClient) CleanUp(ctx context.Context) error {
 	result, err := c.apiClient.ContainerList(ctx, client.ContainerListOptions{All: true})
 	if err != nil {
