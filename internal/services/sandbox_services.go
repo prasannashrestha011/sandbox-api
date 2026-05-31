@@ -6,9 +6,11 @@ import (
 
 	"github.com/google/uuid"
 
+	postgres_error "main/internal/infra/postgres"
 	"main/internal/repository"
 	"main/internal/repository/model"
 	"main/internal/sandbox/core"
+	services_validators "main/internal/services/validators"
 	sandbox_type "main/internal/types"
 )
 
@@ -34,6 +36,9 @@ func NewSandboxService(repo repository.SandboxRepository, imageRepo repository.D
 }
 
 func (s *sandboxService) Create(ctx context.Context, sandbox *model.Sandbox) error {
+	// Validate and cap the sandbox resource limits
+	services_validators.ValidateAndCapSandboxLimits(sandbox)
+
 	// call the sandbox client, the client returns the container id that to be stored in the database.
 	//create method populates the model
 	log.Println("Fetching image details for image ID: ", sandbox.ImageID)
@@ -59,21 +64,33 @@ func (s *sandboxService) Create(ctx context.Context, sandbox *model.Sandbox) err
 }
 
 func (s *sandboxService) GetByID(ctx context.Context, id uuid.UUID) (*model.Sandbox, error) {
-	return s.repo.FindByID(ctx, id)
+	sandbox, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, postgres_error.MapError(err, "fetch sandbox by id", "sandbox")
+	}
+	return sandbox, nil
 }
 
 func (s *sandboxService) GetBySessionID(ctx context.Context, sessionID uuid.UUID) (*model.Sandbox, error) {
-	return s.repo.FindBySessionID(ctx, sessionID)
+	sandbox, err := s.repo.FindBySessionID(ctx, sessionID)
+	if err != nil {
+		return nil, postgres_error.MapError(err, "fetch sandbox by session ID", "sandbox")
+	}
+	return sandbox, nil
 }
 
 func (s *sandboxService) ListByUserID(ctx context.Context, userID string) ([]model.Sandbox, error) {
-	return s.repo.ListByUserID(ctx, userID)
+	sandboxes, err := s.repo.ListByUserID(ctx, userID)
+	if err != nil {
+		return nil, postgres_error.MapError(err, "list sandboxes by user ID", "sandbox")
+	}
+	return sandboxes, nil
 }
 
 func (s *sandboxService) UpdateStatus(ctx context.Context, id uuid.UUID, status sandbox_type.SandboxState) error {
-	return s.repo.UpdateStatus(ctx, id, status)
+	return postgres_error.MapError(s.repo.UpdateStatus(ctx, id, status), "update sandbox status", "sandbox")
 }
 
 func (s *sandboxService) Delete(ctx context.Context, id uuid.UUID) error {
-	return s.repo.Delete(ctx, id)
+	return postgres_error.MapError(s.repo.Delete(ctx, id), "delete sandbox", "sandbox")
 }
