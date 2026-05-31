@@ -7,20 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"main/internal/types"
-
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
-
-// Config holds JWT signing parameters.
-// Initialize this once in main via InitFromEnv() (or Init()) then use Get()/Must() everywhere.
-type Config struct {
-	Secret        string
-	TTL           time.Duration
-	RefreshTTL    time.Duration
-	SecureCookies bool
-}
 
 var (
 	JwtUtil  *Config
@@ -91,7 +80,7 @@ func (c *Config) IssueAccessToken(userID uuid.UUID, role string) (string, error)
 		return "", errors.New("userID must not be nil")
 	}
 	now := time.Now()
-	return sign(types.Claims{
+	return sign(Claims{
 		UserID: userID.String(),
 		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -107,7 +96,7 @@ func (c *Config) IssueToken(userID uuid.UUID, role string) (access, refresh stri
 	}
 	now := time.Now()
 
-	access, accessErr := sign(types.Claims{
+	access, accessErr := sign(Claims{
 		UserID: userID.String(),
 		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -116,7 +105,7 @@ func (c *Config) IssueToken(userID uuid.UUID, role string) (access, refresh stri
 		},
 	}, c.Secret)
 
-	refresh, refreshErr := sign(types.RefreshClaims{
+	refresh, refreshErr := sign(RefreshClaims{
 		UserID: userID.String(),
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
@@ -127,11 +116,11 @@ func (c *Config) IssueToken(userID uuid.UUID, role string) (access, refresh stri
 	return access, refresh, errors.Join(accessErr, refreshErr)
 }
 
-func (c *Config) ValidateToken(tokenString string) (*types.Claims, error) {
+func (c *Config) ValidateToken(tokenString string) (*Claims, error) {
 	if tokenString == "" {
 		return nil, errors.New("token must not be empty")
 	}
-	claims := &types.Claims{}
+	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, keyFunc(c.Secret))
 	if err != nil {
 		return nil, err
