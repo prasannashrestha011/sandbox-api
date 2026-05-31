@@ -8,9 +8,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"main/internal/mapper"
+	"main/internal/controllers/mapper"
+	"main/internal/domain"
+	"main/internal/dto"
 	"main/internal/services"
-	sandbox_type "main/internal/types"
 )
 
 type SandboxController struct {
@@ -21,118 +22,132 @@ func NewSandboxController(service services.SandboxService) *SandboxController {
 	return &SandboxController{service: service}
 }
 
-func (c *SandboxController) CreateSandbox(w http.ResponseWriter, r *http.Request) {
-	var req sandbox_type.CreateRequest
+func (c *SandboxController) CreateSandbox(w http.ResponseWriter, r *http.Request) error {
+	var req dto.CreateRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request body"})
-		return
+		return err
 	}
 
-	sandbox, err := mapper.SandboxCreateRequestToModel(req, r.Context(), time.Now())
+	sandbox, err := mapper.SandboxCreateRequestToServiceModel(req, r.Context(), time.Now())
 	if err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "failed to map request to model"})
-		return
+		return err
 	}
 
-	if err := c.service.Create(r.Context(), sandbox); err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to create sandbox"})
-		return
+	if err := c.service.Create(r.Context(), req.ImageID, sandbox); err != nil {
+		return err
 	}
 
-	writeJSON(w, http.StatusCreated, mapper.SandboxModelToCreateResponse(sandbox))
+	writeJSON(w, http.StatusCreated, mapper.SandboxServiceModelToCreateResponse(sandbox))
+	return nil
 }
 
-func (c *SandboxController) GetSandboxByID(w http.ResponseWriter, r *http.Request) {
+func (c *SandboxController) GetSandboxByID(w http.ResponseWriter, r *http.Request) error {
 	idStr := extractParam(r, "id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid sandbox id"})
-		return
+		return domain.InvalidRequestError("invalid sandbox id", nil)
 	}
 
 	sandbox, err := c.service.GetByID(r.Context(), id)
 	if err != nil {
-		writeJSON(w, http.StatusNotFound, map[string]string{"error": "sandbox not found"})
-		return
+		return err
 	}
 
 	writeJSON(w, http.StatusOK, sandbox)
+	return nil
 }
 
-func (c *SandboxController) GetSandboxBySessionID(w http.ResponseWriter, r *http.Request) {
+func (c *SandboxController) GetSandboxBySessionID(w http.ResponseWriter, r *http.Request) error {
 	sessionStr := extractParam(r, "sessionId")
 	sessionID, err := uuid.Parse(sessionStr)
 	if err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid session id"})
-		return
+		return err
 	}
 
 	sandbox, err := c.service.GetBySessionID(r.Context(), sessionID)
 	if err != nil {
-		writeJSON(w, http.StatusNotFound, map[string]string{"error": "sandbox not found"})
-		return
+		return err
 	}
 
 	writeJSON(w, http.StatusOK, sandbox)
+	return nil
 }
 
-func (c *SandboxController) ListSandboxesByUser(w http.ResponseWriter, r *http.Request) {
+func (c *SandboxController) ListSandboxesByUser(w http.ResponseWriter, r *http.Request) error {
 	userID := extractQuery(r, "user_id")
 	if userID == "" {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "user_id is required"})
-		return
+		return domain.InvalidRequestError("user_id is required", nil)
 	}
 
 	items, err := c.service.ListByUserID(r.Context(), userID)
 	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to list sandboxes"})
-		return
+		return err
 	}
-
 	writeJSON(w, http.StatusOK, items)
+	return nil
 }
 
-func (c *SandboxController) UpdateSandboxStatus(w http.ResponseWriter, r *http.Request) {
+func (c *SandboxController) UpdateSandboxStatus(w http.ResponseWriter, r *http.Request) error {
 	idStr := extractParam(r, "id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid sandbox id"})
-		return
+		return domain.InvalidRequestError("invalid sandbox id", nil)
 	}
 
-	var req sandbox_type.UpdateStatusRequest
+	var req dto.UpdateStatusRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request body"})
-		return
+		return domain.InvalidRequestError("invalid request body", nil)
 	}
 	if req.Status == "" {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "status is required"})
-		return
+		return domain.InvalidRequestError("status is required", nil)
 	}
 
 	if err := c.service.UpdateStatus(r.Context(), id, req.Status); err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to update status"})
-		return
+		return err
 	}
 
 	writeJSON(w, http.StatusOK, map[string]string{"status": "updated"})
+	return nil
 }
 
-func (c *SandboxController) DeleteSandbox(w http.ResponseWriter, r *http.Request) {
+func (c *SandboxController) DeleteSandbox(w http.ResponseWriter, r *http.Request) error {
 	idStr := extractParam(r, "id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid sandbox id"})
-		return
+		return domain.InvalidRequestError("invalid sandbox id", nil)
 	}
 
 	if err := c.service.Delete(r.Context(), id); err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to delete sandbox"})
-		return
+		return err
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+	return nil
+}
+
+func (c *SandboxController) ExecuteCode(w http.ResponseWriter, r *http.Request) error {
+	containerIDStr := extractParam(r, "containerID")
+	containerID, err := uuid.Parse(containerIDStr)
+	if err != nil {
+		return domain.InvalidRequestError("invalid container id", nil)
+	}
+
+	var req dto.ExecuteCodeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return domain.InvalidRequestError("invalid request body", nil)
+	}
+	if req.Code == "" {
+		return domain.InvalidRequestError("code is required", nil)
+	}
+
+	result, err := c.service.ExecuteCode(r.Context(), containerID, req.Code)
+	if err != nil {
+		return err
+	}
+
+	writeJSON(w, http.StatusOK, map[string]string{"result": result})
+	return nil
 }
 
 func writeJSON(w http.ResponseWriter, status int, payload any) {
