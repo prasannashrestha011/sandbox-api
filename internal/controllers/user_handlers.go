@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
-	"log"
+	"errors"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -33,7 +33,11 @@ func (c *UserController) CreateUser(w http.ResponseWriter, r *http.Request) erro
 	}
 	err := input.Validate()
 	if err != nil {
-		return err
+		var v *dto.ValidationErrors
+		if errors.As(err, &v) {
+			return domain.ValidationError(err, v.Violations)
+		}
+		return domain.InvalidRequestError("invalid request body", err)
 	}
 
 	user := mapper.CreateUserInputToModel(&input)
@@ -41,13 +45,10 @@ func (c *UserController) CreateUser(w http.ResponseWriter, r *http.Request) erro
 		return domain.InvalidRequestError("invalid request body", nil)
 	}
 
-	// if err := c.userService.Create(r.Context(), user); err != nil {
-	// 	log.Println("Create error: ", err.Error())
-	// 	return err
-	// }
-	_ = c.userService.Create(r.Context(), user)
-
-	log.Println("User: ", user)
+	err = c.userService.Create(r.Context(), user)
+	if err != nil {
+		return err
+	}
 	response.WriteJSON(w, r, http.StatusCreated, "user created", mapper.UserModelToDTO(user), nil)
 	return nil
 }
@@ -82,6 +83,14 @@ func (c *UserController) Login(w http.ResponseWriter, r *http.Request) error {
 	var input dto.LoginInput
 	if err := decoder(r, &input); err != nil {
 		return err
+	}
+	err := input.Validate()
+	if err != nil {
+		var v *dto.ValidationErrors
+		if errors.As(err, &v) {
+			return domain.ValidationError(err, v.Violations)
+		}
+		return domain.InvalidRequestError("invalid request body", err)
 	}
 
 	user, accessToken, refreshToken, err := c.authService.Authenticate(r.Context(), input.Username, input.Password)
@@ -128,6 +137,15 @@ func (c *UserController) UpdateUser(w http.ResponseWriter, r *http.Request) erro
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		return err
 	}
+	err := input.Validate()
+	if err != nil {
+		var v *dto.ValidationErrors
+		if errors.As(err, &v) {
+			return domain.ValidationError(err, v.Violations)
+		}
+		return domain.InvalidRequestError("invalid request body", err)
+	}
+
 	input.UserID = userID
 
 	user := mapper.UpdateUserInputToModel(&input)
