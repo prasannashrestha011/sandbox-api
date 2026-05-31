@@ -1,4 +1,4 @@
-package executil
+package sb_executil
 
 import (
 	"bytes"
