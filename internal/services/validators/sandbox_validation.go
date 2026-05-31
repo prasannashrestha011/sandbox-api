@@ -1,7 +1,7 @@
 package services_validators
 
 import (
-	"main/internal/repository/model"
+	"main/internal/services/models"
 )
 
 const (
@@ -12,7 +12,7 @@ const (
 
 // ValidateAndCapSandboxLimits enforces sensible resource limits, preventing
 // malicious or excessive resource allocation.
-func ValidateAndCapSandboxLimits(sandbox *model.Sandbox) {
+func ValidateAndCapSandboxLimits(sandbox *models.Sandbox) {
 	if sandbox == nil {
 		return
 	}
