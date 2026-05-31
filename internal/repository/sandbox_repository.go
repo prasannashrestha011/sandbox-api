@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
+	"main/internal/enums"
 	"main/internal/repository/model"
-	sandbox_type "main/internal/types"
 )
 
 // SandboxRepository defines persistence methods for sandbox sessions.
@@ -16,7 +16,7 @@ type SandboxRepository interface {
 	FindByID(ctx context.Context, id uuid.UUID) (*model.Sandbox, error)
 	FindBySessionID(ctx context.Context, sessionID uuid.UUID) (*model.Sandbox, error)
 	ListByUserID(ctx context.Context, userID string) ([]model.Sandbox, error)
-	UpdateStatus(ctx context.Context, id uuid.UUID, status sandbox_type.SandboxState) error
+	UpdateStatus(ctx context.Context, id uuid.UUID, status enums.SandboxState) error
 	Delete(ctx context.Context, id uuid.UUID) error
 }
 
@@ -60,7 +60,7 @@ func (r *dockerRepository) ListByUserID(ctx context.Context, userID string) ([]m
 	return sandboxes, nil
 }
 
-func (r *dockerRepository) UpdateStatus(ctx context.Context, id uuid.UUID, status sandbox_type.SandboxState) error {
+func (r *dockerRepository) UpdateStatus(ctx context.Context, id uuid.UUID, status enums.SandboxState) error {
 	return r.db.WithContext(ctx).Model(&model.Sandbox{}).Where("id = ?", id).Update("status", status).Error
 }
 

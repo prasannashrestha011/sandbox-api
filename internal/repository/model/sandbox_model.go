@@ -1,7 +1,7 @@
 package model
 
 import (
-	sandbox_type "main/internal/types"
+	"main/internal/enums"
 	"time"
 
 	"github.com/google/uuid"
@@ -22,11 +22,11 @@ type Sandbox struct {
 	ExecTimeout    time.Duration `gorm:"not null"`
 	NetworkMode    string        `gorm:"not null"`
 
-	ContainerName string                    `gorm:"not null;uniqueIndex"`
-	ContainerID   string                    `gorm:"index"`
-	SessionID     uuid.UUID                 `gorm:"type:uuid;not null;uniqueIndex"`
-	Status        sandbox_type.SandboxState `gorm:"type:varchar(16);not null"`
-	ExpiresAt     time.Time                 `gorm:"not null;index"`
+	ContainerName string             `gorm:"not null;uniqueIndex"`
+	ContainerID   string             `gorm:"index"`
+	SessionID     uuid.UUID          `gorm:"type:uuid;not null;uniqueIndex"`
+	Status        enums.SandboxState `gorm:"type:varchar(16);not null"`
+	ExpiresAt     time.Time          `gorm:"not null;index"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time

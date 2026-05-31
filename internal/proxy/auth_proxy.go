@@ -6,8 +6,8 @@ import (
 	"time"
 
 	request_context "main/internal/context"
+	"main/internal/enums"
 	jwtutil "main/internal/security/jwt"
-	"main/internal/types"
 )
 
 func AuthMiddleware(next http.Handler) http.Handler {
@@ -30,7 +30,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		ctx = request_context.WithUserID(ctx, claim.UserID)
-		ctx = request_context.WithRole(ctx, types.Role(claim.Role))
+		ctx = request_context.WithRole(ctx, enums.Role(claim.Role))
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

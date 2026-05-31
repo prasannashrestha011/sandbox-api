@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	request_context "main/internal/context"
-	"main/internal/types"
+	"main/internal/enums"
 )
 
 func AdminMiddleware(next http.Handler) http.Handler {
@@ -15,7 +15,7 @@ func AdminMiddleware(next http.Handler) http.Handler {
 			http.Error(w, "Missing role", http.StatusUnauthorized)
 			return
 		}
-		if role != types.RoleAdmin {
+		if role != enums.RoleAdmin {
 			http.Error(w, "Required admin privilege", http.StatusForbidden)
 			return
 		}

@@ -1,7 +1,7 @@
 package model
 
 import (
-	"main/internal/types"
+	"main/internal/enums"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,7 +13,7 @@ type User struct {
 	Fullname  string         `gorm:"type:varchar(100);not null"`
 	Username  string         `gorm:"type:varchar(50);uniqueIndex;not null"`
 	Password  string         `gorm:"type:varchar(255);not null"`
-	Role      types.Role     `gorm:"type:varchar(20);not null"`
+	Role      enums.Role     `gorm:"type:varchar(20);not null"`
 	CreatedAt time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt time.Time      `gorm:"autoUpdateTime"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
