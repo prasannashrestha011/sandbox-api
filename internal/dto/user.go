@@ -33,30 +33,30 @@ func (r *CreateUserInput) Sanitize() {
 func (r *CreateUserInput) Validate() error {
 	r.Sanitize()
 	var v ValidationErrors
-	if r.Fullname == "" {
+	if strings.TrimSpace(r.Fullname) == "" {
 		v.Violations = append(v.Violations, FieldViolation{
 			Field:   "fullname",
 			Message: "fullname is required",
 		})
 	}
-	if r.Username == "" {
+	if strings.TrimSpace(r.Username) == "" {
 		v.Violations = append(v.Violations, FieldViolation{
 			Field:   "username",
 			Message: "username is required",
 		})
 	}
-	if r.Password == "" {
+	if strings.TrimSpace(r.Password) == "" {
 		v.Violations = append(v.Violations, FieldViolation{
 			Field:   "password",
 			Message: "password is required",
 		})
-	} else if len(r.Password) < 6 {
+	} else if len(strings.TrimSpace(r.Password)) < 6 {
 		v.Violations = append(v.Violations, FieldViolation{
 			Field:   "password",
 			Message: "password length should be at least six characters",
 		})
 	}
-	if r.Role != "admin" && r.Role != "user" {
+	if strings.TrimSpace(r.Role) != "admin" && strings.TrimSpace(r.Role) != "user" {
 		v.Violations = append(v.Violations, FieldViolation{
 			Field:   "role",
 			Message: "role must be admin or user",
@@ -88,19 +88,19 @@ func (r *UpdateUserInput) Sanitize() {
 func (r *UpdateUserInput) Validate() error {
 	r.Sanitize()
 	var v ValidationErrors
-	if r.Fullname == "" {
+	if strings.TrimSpace(r.Fullname) == "" {
 		v.Violations = append(v.Violations, FieldViolation{
 			Field:   "fullname",
 			Message: "fullname is required",
 		})
 	}
-	if r.Username == "" {
+	if strings.TrimSpace(r.Username) == "" {
 		v.Violations = append(v.Violations, FieldViolation{
 			Field:   "username",
 			Message: "username is required",
 		})
 	}
-	if r.Role != "admin" && r.Role != "user" {
+	if strings.TrimSpace(r.Role) != "admin" && strings.TrimSpace(r.Role) != "user" {
 		v.Violations = append(v.Violations, FieldViolation{
 			Field:   "role",
 			Message: "role must be admin or user",
@@ -142,13 +142,13 @@ func (r *LoginInput) Sanitize() {
 func (r *LoginInput) Validate() error {
 	r.Sanitize()
 	var v ValidationErrors
-	if r.Username == "" {
+	if strings.TrimSpace(r.Username) == "" {
 		v.Violations = append(v.Violations, FieldViolation{
 			Field:   "username",
 			Message: "username is required",
 		})
 	}
-	if r.Password == "" {
+	if strings.TrimSpace(r.Password) == "" {
 		v.Violations = append(v.Violations, FieldViolation{
 			Field:   "password",
 			Message: "password is required",
