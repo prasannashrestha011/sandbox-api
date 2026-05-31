@@ -23,18 +23,24 @@ const (
 	//Sandbox
 	CodeSandboxNotFound      ErrorCode = "SANDBOX_NOT_FOUND"
 	CodeSandboxAlreadyExists ErrorCode = "SANDBOX_ALREADY_EXISTS"
+
+	//DockerImage
+	CodeDockerImageNotFound      ErrorCode = "DOCKER_IMAGE_NOT_FOUND"
+	CodeDockerImageAlreadyExists ErrorCode = "DOCKER_IMAGE_ALREADY_EXISTS"
 )
 
 var AllErrorCodes = map[string]ErrorCode{
-	string(CodeInternal):             CodeInternal,
-	string(CodeInvalidRequest):       CodeInvalidRequest,
-	string(CodeUnauthorized):         CodeUnauthorized,
-	string(CodeForbidden):            CodeForbidden,
-	string(CodeNotFound):             CodeNotFound,
-	string(CodeConflict):             CodeConflict,
-	string(CodeValidation):           CodeValidation,
-	string(CodeUserNotFound):         CodeUserNotFound,
-	string(CodeUserAlreadyExists):    CodeUserAlreadyExists,
-	string(CodeSandboxNotFound):      CodeSandboxNotFound,
-	string(CodeSandboxAlreadyExists): CodeSandboxAlreadyExists,
+	string(CodeInternal):                 CodeInternal,
+	string(CodeInvalidRequest):           CodeInvalidRequest,
+	string(CodeUnauthorized):             CodeUnauthorized,
+	string(CodeForbidden):                CodeForbidden,
+	string(CodeNotFound):                 CodeNotFound,
+	string(CodeConflict):                 CodeConflict,
+	string(CodeValidation):               CodeValidation,
+	string(CodeUserNotFound):             CodeUserNotFound,
+	string(CodeUserAlreadyExists):        CodeUserAlreadyExists,
+	string(CodeSandboxNotFound):          CodeSandboxNotFound,
+	string(CodeSandboxAlreadyExists):     CodeSandboxAlreadyExists,
+	string(CodeDockerImageNotFound):      CodeDockerImageNotFound,
+	string(CodeDockerImageAlreadyExists): CodeDockerImageAlreadyExists,
 }
