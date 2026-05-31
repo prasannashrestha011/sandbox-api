@@ -5,17 +5,18 @@ import (
 
 	"main/internal/controllers"
 	"main/internal/proxy"
+	"main/internal/response"
 )
 
 // RegisterSandboxRoutes wires sandbox endpoints into the router.
 func RegisterSandboxRoutes(r chi.Router, controller *controllers.SandboxController) {
 	r.Route("/sandboxes", func(sr chi.Router) {
 		sr.Use(proxy.AuthMiddleware)
-		sr.Post("/", controller.CreateSandbox)
-		sr.Get("/", controller.ListSandboxesByUser)
-		sr.Get("/{id}", controller.GetSandboxByID)
-		sr.Get("/session/{sessionId}", controller.GetSandboxBySessionID)
-		sr.Patch("/{id}/status", controller.UpdateSandboxStatus)
-		sr.Delete("/{id}", controller.DeleteSandbox)
+		response.WrapPost(sr, "/", controller.CreateSandbox)
+		response.WrapGet(sr, "/{id}", controller.GetSandboxByID)
+		response.WrapGet(sr, "/", controller.ListSandboxesByUser)
+		response.WrapGet(sr, "/session/{sessionId}", controller.GetSandboxBySessionID)
+		response.WrapPatch(sr, "/{id}/status", controller.UpdateSandboxStatus)
+		response.WrapDelete(sr, "/{id}", controller.DeleteSandbox)
 	})
 }
