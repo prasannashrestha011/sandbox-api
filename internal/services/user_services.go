@@ -9,7 +9,6 @@ import (
 	"main/internal/repository"
 	"main/internal/repository/model"
 	"main/internal/security/hashing"
-	services_validators "main/internal/services/validators"
 )
 
 // UserService exposes business operations for users (CRUD and profile updates).
@@ -31,12 +30,8 @@ func NewUserService(userrepo repository.UserRepository) UserService {
 }
 
 func (s *userService) Create(ctx context.Context, user *model.User) error {
-	password, err := services_validators.ValidateCreateUser(user)
-	if err != nil {
-		return err
-	}
 
-	hashed, err := hashing.HashPassword(password)
+	hashed, err := hashing.HashPassword(user.Password)
 	if err != nil {
 		return postgres_error.MapError(err, "create user", "user")
 	}
@@ -63,17 +58,11 @@ func (s *userService) List(ctx context.Context) ([]model.User, error) {
 }
 
 func (s *userService) UpdateDetails(ctx context.Context, user *model.User) error {
-	if err := services_validators.ValidateUpdateDetails(user); err != nil {
-		return err
-	}
 	err := s.userrepo.UpdateDetails(ctx, user)
 	return postgres_error.MapError(err, "update user details", "user")
 
 }
 
 func (s *userService) Delete(ctx context.Context, id uuid.UUID) error {
-	if err := services_validators.ValidateDeleteID(id); err != nil {
-		return err
-	}
 	return postgres_error.MapError(s.userrepo.Delete(ctx, id), "delete user", "user")
 }
