@@ -6,10 +6,13 @@ import (
 
 	"github.com/google/uuid"
 
+	"main/internal/domain"
+	"main/internal/dto"
 	"main/internal/enums"
 	postgres_error "main/internal/infra/postgres"
 	"main/internal/repository"
 	"main/internal/sandbox/core"
+	"main/internal/sandbox/lang"
 	service_mapper "main/internal/services/mapper"
 	"main/internal/services/models"
 	services_validators "main/internal/services/validators"
@@ -24,7 +27,7 @@ type SandboxService interface {
 	UpdateStatus(ctx context.Context, id uuid.UUID, status enums.SandboxState) error
 
 	//code exeuction
-	ExecuteCode(ctx context.Context, containerID uuid.UUID, code string) (string, error)
+	ExecuteCode(ctx context.Context, containerID string, req *dto.ExecuteCodeRequest) (string, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 }
 
@@ -111,8 +114,14 @@ func (s *sandboxService) UpdateStatus(ctx context.Context, id uuid.UUID, status 
 	return postgres_error.MapError(s.repo.UpdateStatus(ctx, id, status), "update sandbox status", "sandbox")
 }
 
-func (s *sandboxService) ExecuteCode(ctx context.Context, containerID uuid.UUID, code string) (string, error) {
-	return s.sandboxClient.ExecuteCode(ctx, containerID, code)
+func (s *sandboxService) ExecuteCode(ctx context.Context, containerID string, req *dto.ExecuteCodeRequest) (string, error) {
+
+	cmd, err := lang.BuildCommand(req.Lang, req.Code)
+	if err != nil {
+		return "", domain.InvalidRequestError("unsupported language", nil)
+	}
+
+	return s.sandboxClient.ExecuteCode(ctx, containerID, cmd)
 }
 func (s *sandboxService) Delete(ctx context.Context, id uuid.UUID) error {
 	return postgres_error.MapError(s.repo.Delete(ctx, id), "delete sandbox", "sandbox")
