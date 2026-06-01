@@ -9,9 +9,9 @@ import (
 	"github.com/google/uuid"
 
 	request_context "main/internal/context"
+	"main/internal/controllers/mapper"
 	"main/internal/domain"
 	"main/internal/dto"
-	"main/internal/mapper"
 	"main/internal/response"
 	jwtutil "main/internal/security/jwt"
 	"main/internal/services"
