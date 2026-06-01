@@ -114,6 +114,7 @@ func (r *CreateImageRequest) Validate() error {
 }
 
 type ExecuteCodeRequest struct {
+	Lang string `json:"lang"`
 	Code string `json:"code"`
 }
 
@@ -131,6 +132,12 @@ func (r *ExecuteCodeRequest) Validate() error {
 			Message: "code is required",
 		})
 	}
+	if r.Lang == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "lang",
+			Message: "lang is required",
+		})
+	}
 
 	if len(v.Violations) > 0 {
 		return &v
@@ -146,4 +153,11 @@ type CreateResponse struct {
 	CreatedAt   time.Time
 	ExpiresAt   time.Time
 	Error       *string
+}
+
+// CodeResponse represents the response structure for code execution results.
+type CodeResponse struct {
+	CorrectResult  string `json:"correctResult"`
+	ExecutedResult string `json:"executedResult"`
+	Success        bool   `json:"success"`
 }
