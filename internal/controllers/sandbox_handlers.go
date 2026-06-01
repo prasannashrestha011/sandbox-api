@@ -127,11 +127,7 @@ func (c *SandboxController) DeleteSandbox(w http.ResponseWriter, r *http.Request
 }
 
 func (c *SandboxController) ExecuteCode(w http.ResponseWriter, r *http.Request) error {
-	containerIDStr := extractParam(r, "containerID")
-	containerID, err := uuid.Parse(containerIDStr)
-	if err != nil {
-		return domain.InvalidRequestError("invalid container id", nil)
-	}
+	containerIDStr := extractParam(r, "id")
 
 	var req dto.ExecuteCodeRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -141,7 +137,7 @@ func (c *SandboxController) ExecuteCode(w http.ResponseWriter, r *http.Request) 
 		return domain.InvalidRequestError("code is required", nil)
 	}
 
-	result, err := c.service.ExecuteCode(r.Context(), containerID, req.Code)
+	result, err := c.service.ExecuteCode(r.Context(), containerIDStr, &req)
 	if err != nil {
 		return err
 	}
