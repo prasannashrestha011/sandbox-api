@@ -2,7 +2,9 @@ package services
 
 import (
 	"context"
+	"net/http"
 
+	"main/internal/domain"
 	"main/internal/dto"
 	postgres_error "main/internal/infra/postgres"
 	"main/internal/repository"
@@ -26,8 +28,12 @@ func NewLabService(repo repository.LabRepository) LabService {
 }
 
 func (s *labService) CreateLab(ctx context.Context, req *dto.CreateLabRequest) (*dto.LabResponse, error) {
-	labModel := mapper.ToLabModel(req)
+	labModel := mapper.ToLabModel(req, ctx)
 
+	ok, _ := s.repo.ValidateContainerID(ctx, labModel.ContainerID)
+	if !ok {
+		return nil, domain.NewAppError(http.StatusBadRequest, domain.CodeDockerImageNotFound, "specified docker image not found", nil, nil)
+	}
 	if err := s.repo.Create(ctx, labModel); err != nil {
 		return nil, postgres_error.MapError(err, "CreateLab", "Lab")
 	}
