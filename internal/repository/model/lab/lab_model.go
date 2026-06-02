@@ -16,7 +16,7 @@ type Lab struct {
 	Exercises   []Exercise `gorm:"foreignKey:LabID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	ContainerID string     `gorm:"not null"`
 	CreatedByID string     `gorm:"not null;index;type:uuid"`
-	CreatedBy   model.User `gorm:"foreignKey:CreatedByID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	CreatedBy   model.User `gorm:"foreignKey:CreatedByID;references:UserID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
 
 	Tags       []Tag  `gorm:"many2many:lab_tags;"`
 	Difficulty string `gorm:"not null"`
