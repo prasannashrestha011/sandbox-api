@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 
 	"main/internal/controllers"
-	"main/internal/pkg"
 	"main/internal/proxy"
 	"main/internal/repository"
 	"main/internal/routes"
@@ -21,6 +20,7 @@ type Repos struct {
 	UserRepo        repository.UserRepository
 	RefreshRepo     repository.RefreshTokenRepository
 	DockerImageRepo repository.DockerImageRepository
+	LabRepo         repository.LabRepository
 }
 
 // Services groups all services.
@@ -29,6 +29,7 @@ type Services struct {
 	UserService        services.UserService
 	AuthService        services.AuthService
 	DockerImageService services.DockerImageService
+	LabService         services.LabService
 }
 
 // Controllers groups all controllers.
@@ -38,6 +39,8 @@ type Controllers struct {
 	UserController        *controllers.UserController
 	DockerImageController *controllers.DockerImageController
 	PingerController      *controllers.PingerController
+	// WebSocketController   *websocket.WebSocketController
+	LabController *controllers.LabController
 }
 
 // App wires repositories, services, controllers, and routes.
@@ -62,6 +65,7 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		UserRepo:        repository.NewUserRepository(db),
 		RefreshRepo:     repository.NewRefreshTokenRepository(db),
 		DockerImageRepo: repository.NewDockerImageRepository(db),
+		LabRepo:         repository.NewLabRepository(db),
 	}
 
 	servicesGroup := Services{
@@ -69,6 +73,7 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		UserService:        services.NewUserService(repos.UserRepo),
 		AuthService:        services.NewAuthService(repos.UserRepo, repos.RefreshRepo),
 		DockerImageService: services.NewDockerImageService(repos.DockerImageRepo),
+		LabService:         services.NewLabService(repos.LabRepo),
 	}
 
 	controllersGroup := Controllers{
@@ -76,6 +81,8 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		UserController:        controllers.NewUserController(servicesGroup.UserService, servicesGroup.AuthService),
 		DockerImageController: controllers.NewDockerImageController(servicesGroup.DockerImageService),
 		PingerController:      controllers.NewPingerController(),
+		// WebSocketController:   websocket.NewWebSocketController(servicesGroup.SandboxService),
+		LabController: controllers.NewLabController(servicesGroup.LabService),
 	}
 
 	router := chi.NewRouter()
@@ -86,7 +93,8 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 	routes.RegisterSandboxRoutes(router, controllersGroup.SandboxController)
 	routes.RegisterUserRoutes(router, controllersGroup.UserController)
 	routes.RegisterDockerImageRoutes(router, controllersGroup.DockerImageController)
-	pkg.NewWebSocket(router)
+	routes.RegisterLabRoutes(router, controllersGroup.LabController)
+	// websocket.RegisterWebSocketRoutes(router, controllersGroup.WebSocketController)
 	return &App{
 		Repos:       repos,
 		Services:    servicesGroup,
