@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"log"
 
 	"gorm.io/gorm"
 )
@@ -30,6 +31,10 @@ func Connect(ctx context.Context, cfg PostgresConfig) (*gorm.DB, error) {
 
 	if err := sqlDB.PingContext(ctx); err != nil {
 		return nil, err
+	}
+	err = Seed(db)
+	if err != nil {
+		log.Println("Failed to create the seed")
 	}
 
 	return db, nil
