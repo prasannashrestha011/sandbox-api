@@ -1,13 +1,19 @@
 package mapper
 
 import (
+	"context"
+	request_context "main/internal/context"
 	"main/internal/dto"
 	"main/internal/services/models"
 )
 
 // ToLabModel maps a DTO create request to a service Lab model.
-func ToLabModel(req *dto.CreateLabRequest) *models.Lab {
+func ToLabModel(req *dto.CreateLabRequest, ctx context.Context) *models.Lab {
 	if req == nil {
+		return nil
+	}
+	userID, ok := request_context.UserID(ctx)
+	if !ok {
 		return nil
 	}
 
@@ -27,6 +33,9 @@ func ToLabModel(req *dto.CreateLabRequest) *models.Lab {
 		Difficulty:  req.Difficulty,
 		IsPublic:    req.IsPublic,
 		Tags:        tags,
+		Exercises:   exercises,
+		ContainerID: req.ContainerID,
+		CreatedByID: userID.String(),
 	}
 }
 
