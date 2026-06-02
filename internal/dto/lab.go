@@ -1,6 +1,9 @@
 package dto
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 type CreateLabRequest struct {
 	Title       string                  `json:"title" binding:"required"`
@@ -10,6 +13,55 @@ type CreateLabRequest struct {
 	IsPublic    bool                    `json:"isPublic"`
 	Exercises   []CreateExerciseRequest `json:"exercises"`
 	Tags        []string                `json:"tags"`
+	ContainerID string                  `json:"containerID" binding:"required"`
+}
+
+func (c *CreateLabRequest) Sanitize() {
+	c.Title = strings.TrimSpace(c.Title)
+	c.Description = strings.TrimSpace(c.Description)
+	c.Lang = strings.ToLower(strings.TrimSpace(c.Lang))
+	c.Difficulty = strings.ToLower(strings.TrimSpace(c.Difficulty))
+	c.ContainerID = strings.TrimSpace(c.ContainerID)
+}
+func (c *CreateLabRequest) Validate() error {
+	var v ValidationErrors
+	c.Sanitize()
+
+	if c.Title == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "title",
+			Message: "title is required",
+		})
+	}
+	if c.Description == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "description",
+			Message: "description is required",
+		})
+	}
+	if c.Lang == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "lang",
+			Message: "lang is required",
+		})
+	}
+	if c.Difficulty == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "difficulty",
+			Message: "difficulty is required",
+		})
+	}
+	if c.ContainerID == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "containerID",
+			Message: "containerID is required",
+		})
+	}
+
+	if len(v.Violations) > 0 {
+		return &v
+	}
+	return nil
 }
 
 type UpdateLabRequest struct {
