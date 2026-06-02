@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -26,6 +27,13 @@ func (c *LabController) CreateLab(w http.ResponseWriter, r *http.Request) error 
 		return domain.InvalidRequestError("invalid request JSON body", err)
 	}
 
+	if err := req.Validate(); err != nil {
+		var v *dto.ValidationErrors
+		if errors.As(err, &v) {
+			return domain.ValidationError(err, v.Violations)
+		}
+		return domain.ValidationError(err, nil)
+	}
 	resp, err := c.service.CreateLab(r.Context(), &req)
 	if err != nil {
 		return err
