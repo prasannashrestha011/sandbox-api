@@ -7,8 +7,6 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-
-	"main/internal/repository/model"
 )
 
 // PostgresConfig defines connection settings for Postgres.
@@ -52,11 +50,6 @@ func (c PostgresConfig) DSN() string {
 // OpenPostgres opens a GORM connection to Postgres.
 func OpenPostgres(cfg PostgresConfig) (*gorm.DB, error) {
 	return gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{TranslateError: true})
-}
-
-// AutoMigrate runs the schema migrations for persistence models.
-func AutoMigrate(db *gorm.DB) error {
-	return db.AutoMigrate(&model.Sandbox{}, &model.DockerImage{}, &model.User{}, &model.RefreshToken{})
 }
 
 func getEnv(key, fallback string) string {
