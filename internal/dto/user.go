@@ -12,6 +12,7 @@ type User struct {
 	Fullname  string    `json:"fullname,omitempty"`
 	Username  string    `json:"username,omitempty"`
 	Role      string    `json:"role,omitempty"` // "admin" or "user"
+	UserType  string    `json:"type,omitempty"` // "internal" or "external"
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
@@ -22,6 +23,7 @@ type CreateUserInput struct {
 	Username string `json:"username,omitempty"`
 	Password string `json:"password,omitempty"` // plain text, hashed in service before storage
 	Role     string `json:"role,omitempty"`     // "admin" or "user"
+	UserType string `json:"type,omitempty"`     // "internal" or "external"
 }
 
 func (r *CreateUserInput) Sanitize() {
@@ -121,6 +123,7 @@ type UserCreate struct {
 	Username     string `json:"username,omitempty"`
 	PasswordHash string `json:"password_hash,omitempty"`
 	Role         string `json:"role,omitempty"` // "admin" or "user"
+	UserType     string `json:"type,omitempty"` // "internal" or "external"
 }
 
 // UserPasswordUpdate is used internally when updating the password.
