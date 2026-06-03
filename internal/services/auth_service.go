@@ -50,7 +50,7 @@ func (s *authService) Authenticate(ctx context.Context, username, password strin
 		return nil, "", "", domain.InvalidRequestError("invalid credentials", nil)
 	}
 
-	accessToken, refreshToken, err := jwtutil.JwtUtil.IssueToken(user.UserID, string(user.Role))
+	accessToken, refreshToken, err := jwtutil.JwtUtil.IssueToken(user.UserID, string(user.Role), user.UserType)
 	if err != nil {
 		return nil, "", "", domain.InternalError(errors.New("failed to issue token"))
 	}
@@ -78,7 +78,7 @@ func (s *authService) RefreshAccessToken(ctx context.Context, id uuid.UUID, refr
 		return "", postgres_error.MapError(err, "get user by ID", "user")
 	}
 
-	accessToken, err := jwtutil.JwtUtil.IssueAccessToken(user.UserID, string(user.Role))
+	accessToken, err := jwtutil.JwtUtil.IssueAccessToken(user.UserID, string(user.Role), user.UserType)
 	if err != nil {
 		return "", postgres_error.MapError(err, "issue access token", "access_token")
 	}
