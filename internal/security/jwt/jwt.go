@@ -2,6 +2,7 @@ package jwtutil
 
 import (
 	"errors"
+	"main/internal/enums"
 	"net/http"
 	"os"
 	"sync"
@@ -75,14 +76,15 @@ func ConfigFromEnv() (*Config, error) {
 	}, nil
 }
 
-func (c *Config) IssueAccessToken(userID uuid.UUID, role string) (string, error) {
+func (c *Config) IssueAccessToken(userID uuid.UUID, role string, userType enums.UserType) (string, error) {
 	if userID == uuid.Nil {
 		return "", errors.New("userID must not be nil")
 	}
 	now := time.Now()
 	return sign(Claims{
-		UserID: userID.String(),
-		Role:   role,
+		UserID:   userID.String(),
+		Role:     role,
+		UserType: userType,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(c.TTL)),
@@ -90,15 +92,16 @@ func (c *Config) IssueAccessToken(userID uuid.UUID, role string) (string, error)
 	}, c.Secret)
 }
 
-func (c *Config) IssueToken(userID uuid.UUID, role string) (access, refresh string, err error) {
+func (c *Config) IssueToken(userID uuid.UUID, role string, userType enums.UserType) (access, refresh string, err error) {
 	if userID == uuid.Nil {
 		return "", "", errors.New("userID must not be nil")
 	}
 	now := time.Now()
 
 	access, accessErr := sign(Claims{
-		UserID: userID.String(),
-		Role:   role,
+		UserID:   userID.String(),
+		Role:     role,
+		UserType: userType,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(c.TTL)),
