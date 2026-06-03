@@ -1,6 +1,7 @@
 package jwtutil
 
 import (
+	"main/internal/enums"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -8,8 +9,9 @@ import (
 
 // Claims holds JWT payload with a user identifier.
 type Claims struct {
-	UserID string `json:"user_id"`
-	Role   string `json:"role"`
+	UserID   string         `json:"user_id"`
+	Role     string         `json:"role"`
+	UserType enums.UserType `json:"user_type"`
 	jwt.RegisteredClaims
 }
 
