@@ -2,6 +2,7 @@ package mapper
 
 import (
 	"main/internal/dto"
+	"main/internal/enums"
 	"main/internal/repository/model"
 )
 
@@ -15,6 +16,7 @@ func UserCreateToDB(user *dto.UserCreate) *model.User {
 		Fullname: user.Fullname,
 		Username: user.Username,
 		Password: user.PasswordHash,
+		UserType: enums.UserType(user.UserType),
 	}
 }
 
@@ -30,6 +32,8 @@ func UserFromDB(user *model.User) *dto.User {
 		Username:  user.Username,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
+		Role:      string(user.Role),
+		UserType:  string(user.UserType),
 	}
 }
 

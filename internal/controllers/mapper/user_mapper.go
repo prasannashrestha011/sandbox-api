@@ -17,6 +17,7 @@ func UserModelToDTO(user *model.User) *dto.User {
 		Fullname:  user.Fullname,
 		Username:  user.Username,
 		Role:      string(user.Role),
+		UserType:  string(user.UserType),
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}
@@ -45,6 +46,7 @@ func CreateUserInputToModel(input *dto.CreateUserInput) *model.User {
 		Username: input.Username,
 		Password: input.Password,
 		Role:     enums.Role(input.Role),
+		UserType: enums.UserType(input.UserType),
 	}
 }
 
