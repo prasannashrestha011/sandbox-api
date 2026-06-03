@@ -31,6 +31,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 		ctx = request_context.WithUserID(ctx, claim.UserID)
 		ctx = request_context.WithRole(ctx, enums.Role(claim.Role))
+		ctx = request_context.WithUserType(ctx, claim.UserType)
+
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
