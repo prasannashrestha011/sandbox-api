@@ -12,6 +12,7 @@ import (
 func RegisterLabRoutes(r chi.Router, controller *controllers.LabController) {
 	r.Route("/labs", func(sr chi.Router) {
 		sr.Use(proxy.AuthMiddleware)
+		sr.Use(proxy.UserTypeMiddlware)
 		response.WrapPost(sr, "/", controller.CreateLab)
 		response.WrapGet(sr, "/{id}", controller.GetLabByID)
 		response.WrapDelete(sr, "/{id}", controller.DeleteLab)
