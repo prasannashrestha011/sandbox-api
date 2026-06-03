@@ -9,6 +9,7 @@ import (
 	"main/internal/repository"
 	"main/internal/repository/model"
 	"main/internal/security/hashing"
+	services_validators "main/internal/services/validators"
 )
 
 // UserService exposes business operations for users (CRUD and profile updates).
@@ -31,6 +32,10 @@ func NewUserService(userrepo repository.UserRepository) UserService {
 
 func (s *userService) Create(ctx context.Context, user *model.User) error {
 
+	err := services_validators.ValidateUserTypeAndRole(user)
+	if err != nil {
+		return err
+	}
 	hashed, err := hashing.HashPassword(user.Password)
 	if err != nil {
 		return postgres_error.MapError(err, "create user", "user")
@@ -38,7 +43,10 @@ func (s *userService) Create(ctx context.Context, user *model.User) error {
 	user.Password = hashed
 
 	err = s.userrepo.Create(ctx, user)
-	return postgres_error.MapError(err, "create user", "user")
+	if err != nil {
+		return postgres_error.MapError(err, "create user", "user").Err
+	}
+	return nil
 }
 
 func (s *userService) GetByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
