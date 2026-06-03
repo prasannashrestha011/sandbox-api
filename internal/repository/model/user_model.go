@@ -14,6 +14,7 @@ type User struct {
 	Username  string         `gorm:"type:varchar(50);uniqueIndex;not null"`
 	Password  string         `gorm:"type:varchar(255);not null"`
 	Role      enums.Role     `gorm:"type:varchar(20);not null"`
+	UserType  enums.UserType `gorm:"type:varchar(20);not null"`
 	CreatedAt time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt time.Time      `gorm:"autoUpdateTime"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
