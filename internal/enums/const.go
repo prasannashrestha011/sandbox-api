@@ -15,3 +15,10 @@ const (
 	RoleAdmin Role = "admin"
 	RoleUser  Role = "user"
 )
+
+type UserType string
+
+const (
+	UserTypeStudent    UserType = "student"
+	UserTypeInstructor UserType = "instructor"
+)
