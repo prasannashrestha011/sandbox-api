@@ -1,7 +1,13 @@
 package request_context
 
-type userIDKeyType struct{}
-type userRoleKeyType struct{}
+type (
+	userIDKeyType   struct{}
+	userRoleKeyType struct{}
+	userTypeKeyType struct{}
+)
 
-var userIDKey = userIDKeyType{}
-var userRoleKey = userRoleKeyType{}
+var (
+	userIDKey   = userIDKeyType{}
+	userRoleKey = userRoleKeyType{}
+	userTypeKey = userTypeKeyType{}
+)
