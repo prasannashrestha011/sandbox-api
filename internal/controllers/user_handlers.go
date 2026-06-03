@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -47,14 +48,18 @@ func (c *UserController) CreateUser(w http.ResponseWriter, r *http.Request) erro
 
 	err = c.userService.Create(r.Context(), user)
 	if err != nil {
+		var v *dto.ValidationErrors
+		if errors.As(err, &v) {
+			return domain.ValidationError(err, v.Violations)
+		}
 		return err
 	}
+	log.Printf("User created: %s", user.UserID)
 	response.WriteJSON(w, r, http.StatusCreated, "user created", mapper.UserModelToDTO(user), nil)
 	return nil
 }
 
 func (c *UserController) GetUserByID(w http.ResponseWriter, r *http.Request) error {
-
 	userID, ok := request_context.UserID(r.Context())
 	if !ok {
 		return domain.InvalidRequestError("invalid user context", nil)
