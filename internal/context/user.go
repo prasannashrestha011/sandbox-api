@@ -2,6 +2,7 @@ package request_context
 
 import (
 	"context"
+
 	"main/internal/enums"
 
 	"github.com/google/uuid"
@@ -16,6 +17,10 @@ func WithUserID(ctx context.Context, userID string) context.Context {
 
 func WithRole(ctx context.Context, role enums.Role) context.Context {
 	return context.WithValue(ctx, userRoleKey, role)
+}
+
+func WithUserType(ctx context.Context, userType enums.UserType) context.Context {
+	return context.WithValue(ctx, userTypeKey, userType)
 }
 
 // getter
@@ -36,4 +41,9 @@ func UserID(ctx context.Context) (uuid.UUID, bool) {
 func UserRole(ctx context.Context) (enums.Role, bool) {
 	role, ok := ctx.Value(userRoleKey).(enums.Role)
 	return role, ok
+}
+
+func UserType(ctx context.Context) (enums.UserType, bool) {
+	userType, ok := ctx.Value(userTypeKey).(enums.UserType)
+	return userType, ok
 }
