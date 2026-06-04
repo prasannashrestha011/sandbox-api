@@ -22,3 +22,11 @@ const (
 	UserTypeStudent    UserType = "student"
 	UserTypeInstructor UserType = "instructor"
 )
+
+type LabProgress string
+
+const (
+	Enrolled           LabProgress = "enrolled"
+	ProgressInProgress LabProgress = "in_progress"
+	ProgressCompleted  LabProgress = "completed"
+)
