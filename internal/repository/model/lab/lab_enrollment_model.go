@@ -4,6 +4,7 @@ import (
 	"main/internal/repository/model"
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -18,4 +19,9 @@ type LabEnrollment struct {
 	EnrolledAt  time.Time
 	CompletedAt *time.Time
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
+}
+
+func (l *LabEnrollment) BeforeCreate(tx *gorm.DB) (err error) {
+	l.ID = uuid.New().String()
+	return nil
 }
