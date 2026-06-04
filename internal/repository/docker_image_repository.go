@@ -7,15 +7,15 @@ import (
 	"gorm.io/gorm"
 )
 
+type dockerImageRepository struct {
+	db *gorm.DB
+}
+
 type DockerImageRepository interface {
 	// Create inserts a new Docker image record into the database.
 	Create(ctx context.Context, image *model.DockerImage) error
 	FindByID(ctx context.Context, id string) (*model.DockerImage, error)
 	List(ctx context.Context) ([]*model.DockerImage, error)
-}
-
-type dockerImageRepository struct {
-	db *gorm.DB
 }
 
 // NewDockerImageRepository returns a GORM-backed DockerImageRepository.
