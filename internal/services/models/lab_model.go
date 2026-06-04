@@ -9,20 +9,30 @@ type Lab struct {
 	Title       string
 	Description string
 	Lang        string
-	Exercises   []Exercise
 	ContainerID string
-	CreatedByID string
-	CreatedBy   User
+	CreatedByID string // from req
+	CreatedBy   User   //from res
+	Chapters    []Chapter
 	Tags        []Tag
 	Difficulty  string
 	IsPublic    bool
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
+type Chapter struct {
+	ID          string
+	LabID       string
+	Title       string
+	Description string
+	OrderIndex  int
+	Exercises   []Exercise
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
 
 type Exercise struct {
 	ID             string
-	LabID          string
+	ChapterID      string
 	Title          string
 	Description    string
 	StarterCode    string
