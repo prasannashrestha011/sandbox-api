@@ -10,18 +10,18 @@ import (
 	"main/internal/repository/model"
 )
 
+type dockerRepository struct {
+	db *gorm.DB
+}
+
 // SandboxRepository defines persistence methods for sandbox sessions.
 type SandboxRepository interface {
 	Create(ctx context.Context, sandbox *model.Sandbox) error
 	FindByID(ctx context.Context, id uuid.UUID) (*model.Sandbox, error)
 	FindBySessionID(ctx context.Context, sessionID uuid.UUID) (*model.Sandbox, error)
 	ListByUserID(ctx context.Context, userID string) ([]model.Sandbox, error)
-	UpdateStatus(ctx context.Context, id uuid.UUID, status enums.SandboxState) error
-	Delete(ctx context.Context, id uuid.UUID) error
-}
-
-type dockerRepository struct {
-	db *gorm.DB
+	UpdateStatus(ctx context.Context, containerID string, status enums.SandboxState) error
+	Delete(ctx context.Context, containerID string) error
 }
 
 // NewSandboxRepository returns a GORM-backed SandboxRepository.
@@ -60,10 +60,10 @@ func (r *dockerRepository) ListByUserID(ctx context.Context, userID string) ([]m
 	return sandboxes, nil
 }
 
-func (r *dockerRepository) UpdateStatus(ctx context.Context, id uuid.UUID, status enums.SandboxState) error {
-	return r.db.WithContext(ctx).Model(&model.Sandbox{}).Where("id = ?", id).Update("status", status).Error
+func (r *dockerRepository) UpdateStatus(ctx context.Context, containerID string, status enums.SandboxState) error {
+	return r.db.WithContext(ctx).Model(&model.Sandbox{}).Where("container_id = ?", containerID).Update("status", status).Error
 }
 
-func (r *dockerRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.db.WithContext(ctx).Delete(&model.Sandbox{}, "id = ?", id).Error
+func (r *dockerRepository) Delete(ctx context.Context, containerID string) error {
+	return r.db.WithContext(ctx).Delete(&model.Sandbox{}, "container_id = ?", containerID).Error
 }
