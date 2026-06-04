@@ -44,6 +44,10 @@ func ToLabResponse(l *models.Lab) *dto.LabResponse {
 	for i, t := range l.Tags {
 		tags[i] = t.Name
 	}
+	chapters := make([]dto.ChapterResponse, len(l.Chapters))
+	for i, c := range l.Chapters {
+		chapters[i] = *ToChapterResponse(&c)
+	}
 
 	return &dto.LabResponse{
 		ID:          l.ID,
@@ -55,8 +59,10 @@ func ToLabResponse(l *models.Lab) *dto.LabResponse {
 		ContainerID: l.ContainerID,
 		CreatedByID: l.CreatedByID,
 		Tags:        tags,
-		CreatedAt:   l.CreatedAt,
-		UpdatedAt:   l.UpdatedAt,
+		Chapters:    chapters,
+
+		CreatedAt: l.CreatedAt,
+		UpdatedAt: l.UpdatedAt,
 	}
 }
 
