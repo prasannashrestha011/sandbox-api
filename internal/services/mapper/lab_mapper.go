@@ -17,10 +17,6 @@ func ToLabModel(req *dto.CreateLabRequest, ctx context.Context) *models.Lab {
 		return nil
 	}
 
-	exercises := make([]models.Exercise, len(req.Exercises))
-	for i, ex := range req.Exercises {
-		exercises[i] = *ToExerciseModel(&ex)
-	}
 	tags := make([]models.Tag, len(req.Tags))
 	for i, t := range req.Tags {
 		tags[i] = models.Tag{Name: t}
@@ -33,7 +29,6 @@ func ToLabModel(req *dto.CreateLabRequest, ctx context.Context) *models.Lab {
 		Difficulty:  req.Difficulty,
 		IsPublic:    req.IsPublic,
 		Tags:        tags,
-		Exercises:   exercises,
 		ContainerID: req.ContainerID,
 		CreatedByID: userID.String(),
 	}
@@ -43,11 +38,6 @@ func ToLabModel(req *dto.CreateLabRequest, ctx context.Context) *models.Lab {
 func ToLabResponse(l *models.Lab) *dto.LabResponse {
 	if l == nil {
 		return nil
-	}
-
-	exercises := make([]dto.ExerciseResponse, len(l.Exercises))
-	for i, ex := range l.Exercises {
-		exercises[i] = *ToExerciseResponse(&ex)
 	}
 
 	tags := make([]string, len(l.Tags))
@@ -65,18 +55,18 @@ func ToLabResponse(l *models.Lab) *dto.LabResponse {
 		ContainerID: l.ContainerID,
 		CreatedByID: l.CreatedByID,
 		Tags:        tags,
-		Exercises:   exercises,
 		CreatedAt:   l.CreatedAt,
 		UpdatedAt:   l.UpdatedAt,
 	}
 }
 
 // ToExerciseModel maps a DTO create exercise request to a service Exercise model.
-func ToExerciseModel(req *dto.CreateExerciseRequest) *models.Exercise {
+func ToExerciseModel(req *dto.CreateExerciseRequest, chapterID string) *models.Exercise {
 	if req == nil {
 		return nil
 	}
 	return &models.Exercise{
+		ChapterID:      chapterID,
 		Title:          req.Title,
 		Description:    req.Description,
 		StarterCode:    req.StarterCode,
@@ -95,7 +85,7 @@ func ToExerciseResponse(e *models.Exercise) *dto.ExerciseResponse {
 	}
 	return &dto.ExerciseResponse{
 		ID:             e.ID,
-		LabID:          e.LabID,
+		ChapterID:      e.ChapterID,
 		Title:          e.Title,
 		Description:    e.Description,
 		StarterCode:    e.StarterCode,
@@ -107,4 +97,68 @@ func ToExerciseResponse(e *models.Exercise) *dto.ExerciseResponse {
 		CreatedAt:      e.CreatedAt,
 		UpdatedAt:      e.UpdatedAt,
 	}
+}
+
+func ToChapterModel(req *dto.CreateChapterRequest, labID string) *models.Chapter {
+	if req == nil {
+		return nil
+	}
+
+	return &models.Chapter{
+		Title:       req.Title,
+		Description: req.Description,
+		OrderIndex:  req.OrderIndex,
+		LabID:       labID,
+	}
+}
+
+func ToChapterResponse(c *models.Chapter) *dto.ChapterResponse {
+	if c == nil {
+		return nil
+	}
+
+	exercises := make([]dto.ExerciseResponse, len(c.Exercises))
+	for i, e := range c.Exercises {
+		exercises[i] = *ToExerciseResponse(&e)
+	}
+
+	return &dto.ChapterResponse{
+		ID:          c.ID,
+		LabID:       c.LabID,
+		Title:       c.Title,
+		Description: c.Description,
+		OrderIndex:  c.OrderIndex,
+		Exercises:   exercises,
+		CreatedAt:   c.CreatedAt,
+		UpdatedAt:   c.UpdatedAt,
+	}
+}
+func ToChapterResponses(chapters []models.Chapter) []dto.ChapterResponse {
+	res := make([]dto.ChapterResponse, len(chapters))
+	for i, c := range chapters {
+		res[i] = *ToChapterResponse(&c)
+	}
+	return res
+}
+
+func ToChapterModelFromUpdateRequest(req *dto.UpdateChapterRequest) *models.Chapter {
+	if req == nil {
+		return nil
+	}
+
+	ch := &models.Chapter{
+		ID: req.ID,
+	}
+
+	if req.Title != nil {
+		ch.Title = *req.Title
+	}
+	if req.Description != nil {
+		ch.Description = *req.Description
+	}
+	if req.OrderIndex != nil {
+		ch.OrderIndex = *req.OrderIndex
+	}
+
+	return ch
 }
