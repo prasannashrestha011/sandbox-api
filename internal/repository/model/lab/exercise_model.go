@@ -9,7 +9,7 @@ import (
 
 type Exercise struct {
 	ID             string `gorm:"primaryKey;type:uuid"`
-	LabID          string `gorm:"not null;index;type:uuid"`
+	ChapterID      string `gorm:"not null;index;type:uuid"`
 	Title          string `gorm:"not null"`
 	Description    string `gorm:"not null"`
 	StarterCode    string `gorm:"not null"`
