@@ -49,3 +49,12 @@ type Tag struct {
 	ID   string
 	Name string
 }
+
+type LabEnrollment struct {
+	UserID      string
+	LabID       string
+	Status      string // enrolled | in_progress | completed
+	ProgressPct int
+	EnrolledAt  time.Time
+	CompletedAt *time.Time
+}
