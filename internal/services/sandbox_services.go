@@ -24,11 +24,11 @@ type SandboxService interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*models.Sandbox, error)
 	GetBySessionID(ctx context.Context, sessionID uuid.UUID) (*models.Sandbox, error)
 	ListByUserID(ctx context.Context, userID string) ([]models.Sandbox, error)
-	UpdateStatus(ctx context.Context, id uuid.UUID, status enums.SandboxState) error
+	UpdateStatus(ctx context.Context, containerID string, status enums.SandboxState) error
 
 	//code exeuction
 	ExecuteCode(ctx context.Context, containerID string, req *dto.ExecuteCodeRequest) (string, error)
-	Delete(ctx context.Context, id uuid.UUID) error
+	Delete(ctx context.Context, containerID string) error
 }
 
 type sandboxService struct {
@@ -110,8 +110,8 @@ func (s *sandboxService) ListByUserID(ctx context.Context, userID string) ([]mod
 	return result, nil
 }
 
-func (s *sandboxService) UpdateStatus(ctx context.Context, id uuid.UUID, status enums.SandboxState) error {
-	return postgres_error.MapError(s.repo.UpdateStatus(ctx, id, status), "update sandbox status", "sandbox")
+func (s *sandboxService) UpdateStatus(ctx context.Context, containerID string, status enums.SandboxState) error {
+	return postgres_error.MapError(s.repo.UpdateStatus(ctx, containerID, status), "update sandbox status", "sandbox")
 }
 
 func (s *sandboxService) ExecuteCode(ctx context.Context, containerID string, req *dto.ExecuteCodeRequest) (string, error) {
@@ -123,6 +123,6 @@ func (s *sandboxService) ExecuteCode(ctx context.Context, containerID string, re
 
 	return s.sandboxClient.ExecuteCode(ctx, containerID, cmd)
 }
-func (s *sandboxService) Delete(ctx context.Context, id uuid.UUID) error {
-	return postgres_error.MapError(s.repo.Delete(ctx, id), "delete sandbox", "sandbox")
+func (s *sandboxService) Delete(ctx context.Context, containerID string) error {
+	return postgres_error.MapError(s.repo.Delete(ctx, containerID), "delete sandbox", "sandbox")
 }
