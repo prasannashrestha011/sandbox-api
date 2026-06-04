@@ -11,9 +11,9 @@ func LabToGorm(l *service_model.Lab) *gorm_model.Lab {
 		return nil
 	}
 
-	exercises := make([]gorm_model.Exercise, len(l.Exercises))
-	for i, ex := range l.Exercises {
-		exercises[i] = *ExerciseToGorm(&ex)
+	chapters := make([]gorm_model.Chapter, len(l.Chapters))
+	for i, ch := range l.Chapters {
+		chapters[i] = *ChapterToGorm(&ch)
 	}
 
 	tags := make([]gorm_model.Tag, len(l.Tags))
@@ -26,9 +26,9 @@ func LabToGorm(l *service_model.Lab) *gorm_model.Lab {
 		Title:       l.Title,
 		Description: l.Description,
 		Lang:        l.Lang,
-		Exercises:   exercises,
 		ContainerID: l.ContainerID,
 		CreatedByID: l.CreatedByID,
+		Chapters:    chapters,
 		Tags:        tags,
 		Difficulty:  l.Difficulty,
 		IsPublic:    l.IsPublic,
@@ -43,9 +43,9 @@ func LabFromGorm(l *gorm_model.Lab) *service_model.Lab {
 		return nil
 	}
 
-	exercises := make([]service_model.Exercise, len(l.Exercises))
-	for i, ex := range l.Exercises {
-		exercises[i] = *ExerciseFromGorm(&ex)
+	chapters := make([]service_model.Chapter, len(l.Chapters))
+	for i, ch := range l.Chapters {
+		chapters[i] = *ChapterFromGorm(&ch)
 	}
 
 	tags := make([]service_model.Tag, len(l.Tags))
@@ -58,7 +58,6 @@ func LabFromGorm(l *gorm_model.Lab) *service_model.Lab {
 		Title:       l.Title,
 		Description: l.Description,
 		Lang:        l.Lang,
-		Exercises:   exercises,
 		ContainerID: l.ContainerID,
 		CreatedByID: l.CreatedByID,
 		CreatedBy: service_model.User{
@@ -72,6 +71,40 @@ func LabFromGorm(l *gorm_model.Lab) *service_model.Lab {
 		UpdatedAt:  l.UpdatedAt,
 	}
 }
+func ChapterToGorm(c *service_model.Chapter) *gorm_model.Chapter {
+	if c == nil {
+		return nil
+	}
+	exercises := make([]gorm_model.Exercise, len(c.Exercises))
+	for i, ex := range c.Exercises {
+		exercises[i] = *ExerciseToGorm(&ex)
+	}
+	return &gorm_model.Chapter{
+		ID:          c.ID,
+		LabID:       c.LabID,
+		Title:       c.Title,
+		Description: c.Description,
+		OrderIndex:  c.OrderIndex,
+		Exercises:   exercises,
+	}
+}
+func ChapterFromGorm(c *gorm_model.Chapter) *service_model.Chapter {
+	if c == nil {
+		return nil
+	}
+	exercises := make([]service_model.Exercise, len(c.Exercises))
+	for i, ex := range c.Exercises {
+		exercises[i] = *ExerciseFromGorm(&ex)
+	}
+	return &service_model.Chapter{
+		ID:          c.ID,
+		LabID:       c.LabID,
+		Title:       c.Title,
+		Description: c.Description,
+		OrderIndex:  c.OrderIndex,
+		Exercises:   exercises,
+	}
+}
 
 // ExerciseToGorm maps a service Exercise model to a GORM Exercise model
 func ExerciseToGorm(e *service_model.Exercise) *gorm_model.Exercise {
@@ -80,8 +113,8 @@ func ExerciseToGorm(e *service_model.Exercise) *gorm_model.Exercise {
 	}
 	return &gorm_model.Exercise{
 		ID:             e.ID,
-		LabID:          e.LabID,
 		Title:          e.Title,
+		ChapterID:      e.ChapterID,
 		Description:    e.Description,
 		StarterCode:    e.StarterCode,
 		ExpectedOutput: e.ExpectedOutput,
@@ -101,9 +134,9 @@ func ExerciseFromGorm(e *gorm_model.Exercise) *service_model.Exercise {
 	}
 	return &service_model.Exercise{
 		ID:             e.ID,
-		LabID:          e.LabID,
 		Title:          e.Title,
 		Description:    e.Description,
+		ChapterID:      e.ChapterID,
 		StarterCode:    e.StarterCode,
 		ExpectedOutput: e.ExpectedOutput,
 		Hints:          e.Hints,
