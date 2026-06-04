@@ -78,7 +78,8 @@ func (r *labRepository) FindByID(ctx context.Context, id string) (*models.Lab, e
 	var gormLab lab_model.Lab
 
 	err := r.db.WithContext(ctx).
-		Preload("Exercises").
+		Preload("Chapters").
+		Preload("Chapters.Exercises").
 		Preload("Tags").
 		Preload("CreatedBy").
 		First(&gormLab, "id = ?", id).Error
