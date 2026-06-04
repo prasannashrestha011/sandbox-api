@@ -3,18 +3,24 @@ package routes
 import (
 	"github.com/go-chi/chi/v5"
 
-	"main/internal/controllers"
+	controllers "main/internal/controllers/lab"
 	"main/internal/proxy"
 	"main/internal/response"
 )
 
 // RegisterLabRoutes wires lab endpoints into the router.
-func RegisterLabRoutes(r chi.Router, controller *controllers.LabController) {
+func RegisterLabRoutes(r chi.Router, labController *controllers.LabController, chapterController *controllers.ChapterController) {
 	r.Route("/labs", func(sr chi.Router) {
 		sr.Use(proxy.AuthMiddleware)
 		sr.Use(proxy.UserTypeMiddlware)
-		response.WrapPost(sr, "/", controller.CreateLab)
-		response.WrapGet(sr, "/{id}", controller.GetLabByID)
-		response.WrapDelete(sr, "/{id}", controller.DeleteLab)
+		response.WrapPost(sr, "/", labController.CreateLab)
+		response.WrapGet(sr, "/{labId}", labController.GetLabByID)
+		response.WrapDelete(sr, "/{labId}", labController.DeleteLab)
+
+		sr.Route("/{id}/chapters", func(cr chi.Router) {
+			response.WrapPost(cr, "/", chapterController.CreateChapter)
+			response.WrapGet(cr, "/", chapterController.GetChaptersByLabID)
+			response.WrapPut(cr, "/{chapterId}", chapterController.UpdateChapter)
+		})
 	})
 }
