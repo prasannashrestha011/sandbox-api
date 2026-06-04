@@ -172,3 +172,41 @@ func TagFromGorm(t *gorm_model.Tag) *service_model.Tag {
 		Name: t.Name,
 	}
 }
+
+func EnrollmentToGorm(e *service_model.LabEnrollment) *gorm_model.LabEnrollment {
+	if e == nil {
+		return nil
+	}
+	return &gorm_model.LabEnrollment{
+		UserID:      e.UserID,
+		LabID:       e.LabID,
+		Status:      e.Status,
+		ProgressPct: e.ProgressPct,
+		EnrolledAt:  e.EnrolledAt,
+		CompletedAt: e.CompletedAt,
+	}
+}
+func EnrollmentFromGorm(e *gorm_model.LabEnrollment) *service_model.LabEnrollment {
+	if e == nil {
+		return nil
+	}
+	return &service_model.LabEnrollment{
+		UserID:      e.UserID,
+		LabID:       e.LabID,
+		Status:      e.Status,
+		ProgressPct: e.ProgressPct,
+		EnrolledAt:  e.EnrolledAt,
+		CompletedAt: e.CompletedAt,
+	}
+}
+
+func EnrollmentsFromGorm(enrollments *[]gorm_model.LabEnrollment) []service_model.LabEnrollment {
+	if enrollments == nil {
+		return nil
+	}
+	result := make([]service_model.LabEnrollment, len(*enrollments))
+	for i, e := range *enrollments {
+		result[i] = *EnrollmentFromGorm(&e)
+	}
+	return result
+}
