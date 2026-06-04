@@ -27,6 +27,7 @@ type Repos struct {
 	DockerImageRepo repository.DockerImageRepository
 	LabRepo         lab_repo.LabRepository
 	ChapterRepo     lab_repo.ChapterRepository
+	ExerciseRepo    lab_repo.ExerciseRepository
 }
 
 // Services groups all services.
@@ -37,6 +38,7 @@ type Services struct {
 	DockerImageService services.DockerImageService
 	LabService         lab_services.LabService
 	ChapterService     lab_services.ChapterService
+	ExerciseService    lab_services.ExerciseService
 }
 
 // Controllers groups all controllers.
@@ -47,8 +49,9 @@ type Controllers struct {
 	DockerImageController *controllers.DockerImageController
 	PingerController      *controllers.PingerController
 	// WebSocketController   *websocket.WebSocketController
-	LabController     *lab_handler.LabController
-	ChapterController *lab_handler.ChapterController
+	LabController      *lab_handler.LabController
+	ChapterController  *lab_handler.ChapterController
+	ExerciseController *lab_handler.ExerciseHandler
 }
 
 // App wires repositories, services, controllers, and routes.
@@ -75,6 +78,7 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		DockerImageRepo: repository.NewDockerImageRepository(db),
 		LabRepo:         lab_repo.NewLabRepository(db),
 		ChapterRepo:     lab_repo.NewChapterRepository(db),
+		ExerciseRepo:    lab_repo.NewExerciseRepository(db),
 	}
 
 	servicesGroup := Services{
@@ -84,6 +88,7 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		DockerImageService: services.NewDockerImageService(repos.DockerImageRepo),
 		LabService:         lab_services.NewLabService(repos.LabRepo),
 		ChapterService:     lab_services.NewChapterService(repos.ChapterRepo),
+		ExerciseService:    lab_services.NewExerciseService(repos.ExerciseRepo),
 	}
 
 	controllersGroup := Controllers{
@@ -92,8 +97,9 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		DockerImageController: controllers.NewDockerImageController(servicesGroup.DockerImageService),
 		PingerController:      controllers.NewPingerController(),
 		// WebSocketController:   websocket.NewWebSocketController(servicesGroup.SandboxService),
-		LabController:     lab_handler.NewLabController(servicesGroup.LabService),
-		ChapterController: lab_handler.NewChapterController(servicesGroup.ChapterService),
+		LabController:      lab_handler.NewLabController(servicesGroup.LabService),
+		ChapterController:  lab_handler.NewChapterController(servicesGroup.ChapterService),
+		ExerciseController: lab_handler.NewExerciseHandler(servicesGroup.ExerciseService),
 	}
 
 	//listeners for sandbox events (e.g., cleanup after timeout)
@@ -113,7 +119,7 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 	routes.RegisterSandboxRoutes(router, controllersGroup.SandboxController)
 	routes.RegisterUserRoutes(router, controllersGroup.UserController)
 	routes.RegisterDockerImageRoutes(router, controllersGroup.DockerImageController)
-	routes.RegisterLabRoutes(router, controllersGroup.LabController, controllersGroup.ChapterController)
+	routes.RegisterLabRoutes(router, controllersGroup.LabController, controllersGroup.ChapterController, controllersGroup.ExerciseController)
 	// websocket.RegisterWebSocketRoutes(router, controllersGroup.WebSocketController)
 	return &App{
 		Repos:       repos,
