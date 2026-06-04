@@ -18,7 +18,7 @@ type labRepository struct {
 
 // LabRepository defines persistence methods for labs.
 type LabRepository interface {
-	Create(ctx context.Context, l *models.Lab) error
+	Create(ctx context.Context, l *models.Lab) (*models.Lab, error)
 	FindByID(ctx context.Context, id string) (*models.Lab, error)
 	ValidateContainerID(ctx context.Context, containerID string) (bool, error)
 	Update(ctx context.Context, l *models.Lab) error
@@ -31,11 +31,11 @@ func NewLabRepository(db *gorm.DB) LabRepository {
 	return &labRepository{db: db}
 }
 
-func (r *labRepository) Create(ctx context.Context, l *models.Lab) error {
+func (r *labRepository) Create(ctx context.Context, l *models.Lab) (*models.Lab, error) {
 	gormLab := mapper.LabToGorm(l)
 
 	if err := r.db.WithContext(ctx).Omit(clause.Associations).Save(gormLab).Error; err != nil {
-		return err
+		return nil, err
 	}
 
 	// 2. Explicitly manage the tags inside the junction table.
@@ -51,26 +51,27 @@ func (r *labRepository) Create(ctx context.Context, l *models.Lab) error {
 				if err := r.db.WithContext(ctx).First(&existing, "id = ?", tag.ID).Error; err != nil {
 					if err == gorm.ErrRecordNotFound {
 						if err := r.db.WithContext(ctx).Create(tag).Error; err != nil {
-							return err
+							return nil, err
 						}
 					} else {
-						return err
+						return nil, err
 					}
 				}
 			} else {
 				// No ID: find or create by name to avoid duplicates.
 				if err := r.db.WithContext(ctx).Where(lab_model.Tag{Name: tag.Name}).FirstOrCreate(tag).Error; err != nil {
-					return err
+					return nil, err
 				}
 			}
 		}
 
 		if err := r.db.WithContext(ctx).Model(gormLab).Association("Tags").Replace(gormLab.Tags); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	serviceLab := mapper.LabFromGorm(gormLab)
+	return serviceLab, nil
 }
 
 func (r *labRepository) FindByID(ctx context.Context, id string) (*models.Lab, error) {

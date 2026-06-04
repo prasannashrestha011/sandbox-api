@@ -34,11 +34,12 @@ func (s *labService) CreateLab(ctx context.Context, req *dto.CreateLabRequest) (
 	if !ok {
 		return nil, domain.NewAppError(http.StatusBadRequest, domain.CodeDockerImageNotFound, "specified docker image not found", nil, nil)
 	}
-	if err := s.repo.Create(ctx, labModel); err != nil {
+	lab, err := s.repo.Create(ctx, labModel)
+	if err != nil {
 		return nil, postgres_error.MapError(err, "CreateLab", "Lab")
 	}
 
-	return mapper.ToLabResponse(labModel), nil
+	return mapper.ToLabResponse(lab), nil
 }
 
 func (s *labService) GetLabByID(ctx context.Context, id string) (*dto.LabResponse, error) {
