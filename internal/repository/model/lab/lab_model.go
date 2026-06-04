@@ -13,7 +13,7 @@ type Lab struct {
 	Title       string     `gorm:"not null"`
 	Description string     `gorm:"not null"`
 	Lang        string     `gorm:"not null"`
-	Exercises   []Exercise `gorm:"foreignKey:LabID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Chapters    []Chapter  `gorm:"foreignKey:LabID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	ContainerID string     `gorm:"not null"`
 	CreatedByID string     `gorm:"not null;index;type:uuid"`
 	CreatedBy   model.User `gorm:"foreignKey:CreatedByID;references:UserID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
