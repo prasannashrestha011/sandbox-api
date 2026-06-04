@@ -23,7 +23,7 @@ func NewChapterController(chapterService lab_services.ChapterService) *ChapterCo
 
 func (h *ChapterController) CreateChapter(w http.ResponseWriter, r *http.Request) error {
 	var req dto.CreateChapterRequest
-	labID := pkg.ExtractParam(r, "id")
+	labID := pkg.ExtractParam(r, "labId")
 	if _, err := uuid.Parse(labID); err != nil {
 		return domain.InvalidRequestError("invalid lab id", nil)
 	}
