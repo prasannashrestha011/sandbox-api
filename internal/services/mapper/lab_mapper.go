@@ -77,6 +77,40 @@ func ToExerciseModel(req *dto.CreateExerciseRequest, chapterID string) *models.E
 		MaxAttempts:    req.MaxAttempts,
 	}
 }
+func ToExerciseModelFromUpdateRequest(req *dto.UpdateExerciseRequest, id string) *models.Exercise {
+	if req == nil {
+		return nil
+	}
+	ex := &models.Exercise{
+		ID: id,
+	}
+	if req.Title != nil {
+		ex.Title = *req.Title
+	}
+	if req.Description != nil {
+		ex.Description = *req.Description
+	}
+	if req.StarterCode != nil {
+		ex.StarterCode = *req.StarterCode
+	}
+	if req.ExpectedOutput != nil {
+		ex.ExpectedOutput = *req.ExpectedOutput
+	}
+	if req.Hints != nil {
+		ex.Hints = *req.Hints
+	}
+	if req.OrderIndex != nil {
+		ex.OrderIndex = *req.OrderIndex
+	}
+	if req.Solution != nil {
+		ex.Solution = *req.Solution
+	}
+	if req.MaxAttempts != nil {
+		ex.MaxAttempts = *req.MaxAttempts
+	}
+
+	return ex
+}
 
 // ToExerciseResponse maps a service Exercise model to a DTO Exercise response.
 func ToExerciseResponse(e *models.Exercise) *dto.ExerciseResponse {
