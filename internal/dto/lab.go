@@ -73,18 +73,18 @@ type UpdateLabRequest struct {
 }
 
 type LabResponse struct {
-	ID          string             `json:"id"`
-	Title       string             `json:"title"`
-	Description string             `json:"description"`
-	Lang        string             `json:"lang"`
-	Difficulty  string             `json:"difficulty"`
-	IsPublic    bool               `json:"is_public"`
-	ContainerID string             `json:"containerID"`
-	CreatedByID string             `json:"createdByID"`
-	Tags        []string           `json:"tags"`
-	Exercises   []ExerciseResponse `json:"exercises,omitempty"`
-	CreatedAt   time.Time          `json:"createdAt"`
-	UpdatedAt   time.Time          `json:"updatedAt"`
+	ID          string            `json:"id"`
+	Title       string            `json:"title"`
+	Description string            `json:"description"`
+	Lang        string            `json:"lang"`
+	Difficulty  string            `json:"difficulty"`
+	IsPublic    bool              `json:"is_public"`
+	ContainerID string            `json:"containerID"`
+	CreatedByID string            `json:"createdByID"`
+	Tags        []string          `json:"tags"`
+	Chapters    []ChapterResponse `json:"chapters,omitempty"`
+	CreatedAt   time.Time         `json:"createdAt"`
+	UpdatedAt   time.Time         `json:"updatedAt"`
 }
 
 // ##
