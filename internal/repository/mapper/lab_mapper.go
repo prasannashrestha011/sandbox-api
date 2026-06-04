@@ -64,6 +64,7 @@ func LabFromGorm(l *gorm_model.Lab) *service_model.Lab {
 			Username: l.CreatedBy.Username,
 			Fullname: l.CreatedBy.Fullname,
 		},
+		Chapters:   chapters,
 		Tags:       tags,
 		Difficulty: l.Difficulty,
 		IsPublic:   l.IsPublic,
@@ -103,6 +104,8 @@ func ChapterFromGorm(c *gorm_model.Chapter) *service_model.Chapter {
 		Description: c.Description,
 		OrderIndex:  c.OrderIndex,
 		Exercises:   exercises,
+		CreatedAt:   c.CreatedAt,
+		UpdatedAt:   c.UpdatedAt,
 	}
 }
 
