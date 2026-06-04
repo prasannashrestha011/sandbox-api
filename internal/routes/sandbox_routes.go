@@ -17,7 +17,6 @@ func RegisterSandboxRoutes(r chi.Router, controller *controllers.SandboxControll
 		response.WrapGet(sr, "/", controller.ListSandboxesByUser)
 		response.WrapGet(sr, "/session/{sessionId}", controller.GetSandboxBySessionID)
 		response.WrapPost(sr, "/{id}/execute", controller.ExecuteCode)
-		response.WrapPatch(sr, "/{id}/status", controller.UpdateSandboxStatus)
 		response.WrapDelete(sr, "/{id}", controller.DeleteSandbox)
 	})
 }
