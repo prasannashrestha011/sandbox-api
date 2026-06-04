@@ -27,6 +27,15 @@ const (
 	//DockerImage
 	CodeDockerImageNotFound      ErrorCode = "DOCKER_IMAGE_NOT_FOUND"
 	CodeDockerImageAlreadyExists ErrorCode = "DOCKER_IMAGE_ALREADY_EXISTS"
+	//Lab
+	CodeLabNotFound      ErrorCode = "LAB_NOT_FOUND"
+	CodeLabAlreadyExists ErrorCode = "LAB_ALREADY_EXISTS"
+
+	CodeChapterNotFound      ErrorCode = "CHAPTER_NOT_FOUND"
+	CodeChapterAlreadyExists ErrorCode = "CHAPTER_ALREADY_EXISTS"
+
+	CodeExerciseNotFound      ErrorCode = "EXERCISE_NOT_FOUND"
+	CodeExerciseAlreadyExists ErrorCode = "EXERCISE_ALREADY_EXISTS"
 )
 
 var AllErrorCodes = map[string]ErrorCode{
@@ -43,4 +52,10 @@ var AllErrorCodes = map[string]ErrorCode{
 	string(CodeSandboxAlreadyExists):     CodeSandboxAlreadyExists,
 	string(CodeDockerImageNotFound):      CodeDockerImageNotFound,
 	string(CodeDockerImageAlreadyExists): CodeDockerImageAlreadyExists,
+	string(CodeLabNotFound):              CodeLabNotFound,
+	string(CodeLabAlreadyExists):         CodeLabAlreadyExists,
+	string(CodeChapterNotFound):          CodeChapterNotFound,
+	string(CodeChapterAlreadyExists):     CodeChapterAlreadyExists,
+	string(CodeExerciseNotFound):         CodeExerciseNotFound,
+	string(CodeExerciseAlreadyExists):    CodeExerciseAlreadyExists,
 }
