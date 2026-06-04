@@ -46,7 +46,7 @@ func (c *LabController) CreateLab(w http.ResponseWriter, r *http.Request) error 
 }
 
 func (c *LabController) GetLabByID(w http.ResponseWriter, r *http.Request) error {
-	idStr := pkg.ExtractParam(r, "id")
+	idStr := pkg.ExtractParam(r, "labId")
 	if _, err := uuid.Parse(idStr); err != nil {
 		return domain.InvalidRequestError("invalid lab id", nil)
 	}
