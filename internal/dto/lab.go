@@ -6,14 +6,13 @@ import (
 )
 
 type CreateLabRequest struct {
-	Title       string                  `json:"title" binding:"required"`
-	Description string                  `json:"description" binding:"required"`
-	Lang        string                  `json:"lang" binding:"required"`
-	Difficulty  string                  `json:"difficulty" binding:"required"`
-	IsPublic    bool                    `json:"isPublic"`
-	Exercises   []CreateExerciseRequest `json:"exercises"`
-	Tags        []string                `json:"tags"`
-	ContainerID string                  `json:"containerID" binding:"required"`
+	Title       string   `json:"title" binding:"required"`
+	Description string   `json:"description" binding:"required"`
+	Lang        string   `json:"lang" binding:"required"`
+	Difficulty  string   `json:"difficulty" binding:"required"`
+	IsPublic    bool     `json:"isPublic"`
+	Tags        []string `json:"tags"`
+	ContainerID string   `json:"containerID" binding:"required"`
 }
 
 func (c *CreateLabRequest) Sanitize() {
@@ -69,7 +68,7 @@ type UpdateLabRequest struct {
 	Description *string  `json:"description,omitempty"`
 	Lang        *string  `json:"lang,omitempty"`
 	Difficulty  *string  `json:"difficulty,omitempty"`
-	IsPublic    *bool    `json:"isPublic,omitempty"`
+	IsPublic    *bool    `json:"is_public,omitempty"`
 	Tags        []string `json:"tags,omitempty"`
 }
 
@@ -79,24 +78,54 @@ type LabResponse struct {
 	Description string             `json:"description"`
 	Lang        string             `json:"lang"`
 	Difficulty  string             `json:"difficulty"`
-	IsPublic    bool               `json:"isPublic"`
-	ContainerID string             `json:"containerId"`
-	CreatedByID string             `json:"createdById"`
+	IsPublic    bool               `json:"is_public"`
+	ContainerID string             `json:"containerID"`
+	CreatedByID string             `json:"createdByID"`
 	Tags        []string           `json:"tags"`
 	Exercises   []ExerciseResponse `json:"exercises,omitempty"`
 	CreatedAt   time.Time          `json:"createdAt"`
 	UpdatedAt   time.Time          `json:"updatedAt"`
 }
 
+// ##
+type CreateChapterRequest struct {
+	Title       string `json:"title" binding:"required"`
+	Description string `json:"description" binding:"required"`
+	OrderIndex  int    `json:"order_index"`
+}
+type CreateChapterResponse struct {
+	ID string `json:"id"`
+}
+type ChapterResponse struct {
+	ID          string             `json:"id"`
+	LabID       string             `json:"labId"`
+	Title       string             `json:"title"`
+	Description string             `json:"description"`
+	OrderIndex  int                `json:"order_index"`
+	Exercises   []ExerciseResponse `json:"exercises,omitempty"`
+	CreatedAt   time.Time          `json:"createdAt"`
+	UpdatedAt   time.Time          `json:"updatedAt"`
+}
+type UpdateChapterRequest struct {
+	ID          string  `json:"id" binding:"required"`
+	Title       *string `json:"title,omitempty"`
+	Description *string `json:"description,omitempty"`
+	OrderIndex  *int    `json:"order_index,omitempty"`
+}
+
+// ##
 type CreateExerciseRequest struct {
 	Title          string `json:"title" binding:"required"`
 	Description    string `json:"description" binding:"required"`
 	StarterCode    string `json:"starterCode"`
 	ExpectedOutput string `json:"expectedOutput" binding:"required"`
 	Hints          string `json:"hints"`
-	OrderIndex     int    `json:"orderIndex"`
+	OrderIndex     int    `json:"order_index"`
 	Solution       string `json:"solution"`
 	MaxAttempts    int    `json:"maxAttempts"`
+}
+type CreateExerciseResponse struct {
+	ID string `json:"id"`
 }
 
 type UpdateExerciseRequest struct {
@@ -105,22 +134,24 @@ type UpdateExerciseRequest struct {
 	StarterCode    *string `json:"starterCode,omitempty"`
 	ExpectedOutput *string `json:"expectedOutput,omitempty"`
 	Hints          *string `json:"hints,omitempty"`
-	OrderIndex     *int    `json:"orderIndex,omitempty"`
+	OrderIndex     *int    `json:"order_index,omitempty"`
 	Solution       *string `json:"solution,omitempty"`
 	MaxAttempts    *int    `json:"maxAttempts,omitempty"`
 }
 
 type ExerciseResponse struct {
 	ID             string    `json:"id"`
-	LabID          string    `json:"labId"`
+	ChapterID      string    `json:"chapterID"`
 	Title          string    `json:"title"`
 	Description    string    `json:"description"`
 	StarterCode    string    `json:"starterCode"`
 	ExpectedOutput string    `json:"expectedOutput"`
 	Hints          string    `json:"hints"`
-	OrderIndex     int       `json:"orderIndex"`
+	OrderIndex     int       `json:"order_index"`
 	Solution       string    `json:"solution,omitempty"`
 	MaxAttempts    int       `json:"maxAttempts"`
 	CreatedAt      time.Time `json:"createdAt"`
 	UpdatedAt      time.Time `json:"updatedAt"`
 }
+
+// ##
