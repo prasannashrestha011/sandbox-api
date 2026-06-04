@@ -10,6 +10,7 @@ import (
 	"main/internal/sandbox/docker/image"
 
 	"github.com/google/uuid"
+	"github.com/moby/moby/api/types/events"
 	"github.com/moby/moby/client"
 )
 
@@ -17,7 +18,8 @@ import (
 type SandboxClient interface {
 	Create(ctx context.Context, req *model.Sandbox) error
 	ExecuteCode(ctx context.Context, containerID string, cmd []string) (string, error)
-	CleanUp(ctx context.Context) error
+	CleanUp(ctx context.Context, handler func(containerID []string)) error
+	ListenContainerEvents(ctx context.Context, handler func(containerID string)) error
 	Close() error
 }
 
@@ -65,7 +67,7 @@ func (c *dockerSandboxClient) ExecuteCode(ctx context.Context, containerID strin
 	return sb_executil.ExecCreate(ctx, c.apiClient, containerID, cmd)
 }
 
-func (c *dockerSandboxClient) CleanUp(ctx context.Context) error {
+func (c *dockerSandboxClient) CleanUp(ctx context.Context, handler func(containerID []string)) error {
 	result, err := c.apiClient.ContainerList(ctx, client.ContainerListOptions{All: true})
 	if err != nil {
 		log.Println("Clean up func: ", err.Error())
@@ -73,11 +75,13 @@ func (c *dockerSandboxClient) CleanUp(ctx context.Context) error {
 	}
 
 	imageIDs := make(map[string]struct{})
+	containerIDs := make([]string, 0)
 	//Remove containers labeled with "app=sandbox" and collect their image IDs for later cleanup
 	for _, ctr := range result.Items {
 
 		if ctr.Labels["app"] == "sandbox" {
 			imageIDs[ctr.ImageID] = struct{}{}
+			containerIDs = append(containerIDs, ctr.ID)
 			log.Printf("CleanUp: found container %s with image %s", ctr.ID, ctr.ImageID)
 			_, err := c.apiClient.ContainerRemove(ctx, ctr.ID, client.ContainerRemoveOptions{
 				Force: true,
@@ -101,7 +105,27 @@ func (c *dockerSandboxClient) CleanUp(ctx context.Context) error {
 			return err
 		}
 	}
+	handler(containerIDs)
 	return nil
+}
+
+// listens for container events and calls the handler when a container dies or stops. This is used to clean up resources associated with the container.
+func (c *dockerSandboxClient) ListenContainerEvents(ctx context.Context, handler func(containerID string)) error {
+	eventResult := c.apiClient.Events(ctx, client.EventsListOptions{})
+	msgs, errs := eventResult.Messages, eventResult.Err
+	for {
+		select {
+		case msg := <-msgs:
+			if msg.Type == events.ContainerEventType && (msg.Action == "die" || msg.Action == "stop") {
+				handler(msg.Actor.ID)
+			}
+		case err := <-errs:
+			return err
+
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
 }
 
 func (c *dockerSandboxClient) Close() error {
