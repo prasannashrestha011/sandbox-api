@@ -240,7 +240,7 @@ func ToEnrollmentResponses(enrollments []models.LabEnrollment) []dto.EnrollmentR
 	return res
 }
 
-func ToSubmissionModel(ctx context.Context, req *dto.SubmissionRequest) *models.Submission {
+func ToSubmissionModel(ctx context.Context, exerciseID string, req *dto.SubmissionRequest) *models.Submission {
 	if req == nil {
 		return nil
 	}
@@ -250,7 +250,7 @@ func ToSubmissionModel(ctx context.Context, req *dto.SubmissionRequest) *models.
 	}
 	return &models.Submission{
 		UserID:     userID.String(),
-		ExerciseID: req.ExerciseID,
+		ExerciseID: exerciseID,
 		Code:       req.Code,
 	}
 }
