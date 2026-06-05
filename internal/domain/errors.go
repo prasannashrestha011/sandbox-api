@@ -36,6 +36,9 @@ const (
 
 	CodeExerciseNotFound      ErrorCode = "EXERCISE_NOT_FOUND"
 	CodeExerciseAlreadyExists ErrorCode = "EXERCISE_ALREADY_EXISTS"
+
+	CodeEnrollmentNotFound      ErrorCode = "ENROLLMENT_NOT_FOUND"
+	CodeEnrollmentAlreadyExists ErrorCode = "ENROLLMENT_ALREADY_EXISTS"
 )
 
 var AllErrorCodes = map[string]ErrorCode{
@@ -58,4 +61,6 @@ var AllErrorCodes = map[string]ErrorCode{
 	string(CodeChapterAlreadyExists):     CodeChapterAlreadyExists,
 	string(CodeExerciseNotFound):         CodeExerciseNotFound,
 	string(CodeExerciseAlreadyExists):    CodeExerciseAlreadyExists,
+	string(CodeEnrollmentNotFound):       CodeEnrollmentNotFound,
+	string(CodeEnrollmentAlreadyExists):  CodeEnrollmentAlreadyExists,
 }
