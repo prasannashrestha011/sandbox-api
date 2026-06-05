@@ -44,6 +44,18 @@ type Exercise struct {
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 }
+type Submission struct {
+	ID          string
+	UserID      string
+	ExerciseID  string
+	Code        string
+	Language    string
+	Output      string
+	Status      string // passed | failed | runtime_error
+	Score       int
+	AttemptNo   int
+	SubmittedAt time.Time
+}
 
 type Tag struct {
 	ID   string
