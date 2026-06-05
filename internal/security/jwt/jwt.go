@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 )
 
 var (
@@ -76,13 +75,13 @@ func ConfigFromEnv() (*Config, error) {
 	}, nil
 }
 
-func (c *Config) IssueAccessToken(userID uuid.UUID, role string, userType enums.UserType) (string, error) {
-	if userID == uuid.Nil {
-		return "", errors.New("userID must not be nil")
+func (c *Config) IssueAccessToken(userID string, role string, userType enums.UserType) (string, error) {
+	if userID == "" {
+		return "", errors.New("userID must not be empty")
 	}
 	now := time.Now()
 	return sign(Claims{
-		UserID:   userID.String(),
+		UserID:   userID,
 		Role:     role,
 		UserType: userType,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -92,14 +91,14 @@ func (c *Config) IssueAccessToken(userID uuid.UUID, role string, userType enums.
 	}, c.Secret)
 }
 
-func (c *Config) IssueToken(userID uuid.UUID, role string, userType enums.UserType) (access, refresh string, err error) {
-	if userID == uuid.Nil {
-		return "", "", errors.New("userID must not be nil")
+func (c *Config) IssueToken(userID string, role string, userType enums.UserType) (access, refresh string, err error) {
+	if userID == "" {
+		return "", "", errors.New("userID must not be empty")
 	}
 	now := time.Now()
 
 	access, accessErr := sign(Claims{
-		UserID:   userID.String(),
+		UserID:   userID,
 		Role:     role,
 		UserType: userType,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -109,7 +108,7 @@ func (c *Config) IssueToken(userID uuid.UUID, role string, userType enums.UserTy
 	}, c.Secret)
 
 	refresh, refreshErr := sign(RefreshClaims{
-		UserID: userID.String(),
+		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(c.RefreshTTL)),
