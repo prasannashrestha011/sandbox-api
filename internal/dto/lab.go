@@ -155,3 +155,16 @@ type ExerciseResponse struct {
 }
 
 // ##
+
+type EnrollmentRequest struct {
+	UserID string `json:"userID" binding:"required"`
+	LabID  string `json:"labId" binding:"required"`
+}
+type EnrollmentResponse struct {
+	UserID      string     `json:"userID" binding:"required"`
+	LabID       string     `json:"labId" binding:"required"`
+	Status      string     `json:"status"` // enrolled | in_progress | completed
+	ProgressPct int        `json:"progressPct"`
+	EnrolledAt  time.Time  `json:"enrolledAt"`
+	CompletedAt *time.Time `json:"completedAt,omitempty"`
+}
