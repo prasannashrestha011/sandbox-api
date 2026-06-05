@@ -210,3 +210,46 @@ func EnrollmentsFromGorm(enrollments *[]gorm_model.LabEnrollment) []service_mode
 	}
 	return result
 }
+
+func SubmissionToGorm(s *service_model.Submission) *gorm_model.Submission {
+	if s == nil {
+		return nil
+	}
+	return &gorm_model.Submission{
+		ID:          s.ID,
+		ExerciseID:  s.ExerciseID,
+		UserID:      s.UserID,
+		Language:    s.Language,
+		Code:        s.Code,
+		Output:      s.Output,
+		Status:      s.Status,
+		Score:       s.Score,
+		AttemptNo:   s.AttemptNo,
+		SubmittedAt: s.SubmittedAt,
+	}
+}
+func SubmissionFromGorm(s *gorm_model.Submission) *service_model.Submission {
+	if s == nil {
+		return nil
+	}
+	return &service_model.Submission{
+		ID:          s.ID,
+		ExerciseID:  s.ExerciseID,
+		UserID:      s.UserID,
+		Language:    s.Language,
+		Code:        s.Code,
+		Output:      s.Output,
+		Status:      s.Status,
+		Score:       s.Score,
+		AttemptNo:   s.AttemptNo,
+		SubmittedAt: s.SubmittedAt,
+	}
+}
+
+func SubmissionsFromGorm(submissions []gorm_model.Submission) []service_model.Submission {
+	result := make([]service_model.Submission, len(submissions))
+	for i, s := range submissions {
+		result[i] = *SubmissionFromGorm(&s)
+	}
+	return result
+}
