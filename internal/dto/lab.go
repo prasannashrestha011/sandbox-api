@@ -157,8 +157,7 @@ type ExerciseResponse struct {
 // ##
 
 type EnrollmentRequest struct {
-	UserID string `json:"userID" binding:"required"`
-	LabID  string `json:"labId" binding:"required"`
+	LabID string `json:"labId" binding:"required"`
 }
 type EnrollmentResponse struct {
 	UserID      string     `json:"userID" binding:"required"`
