@@ -202,3 +202,35 @@ func ToChapterModelFromUpdateRequest(req *dto.UpdateChapterRequest) *models.Chap
 
 	return ch
 }
+
+func ToEnrollmentToModel(req *dto.EnrollmentRequest) *models.LabEnrollment {
+	if req == nil {
+		return nil
+	}
+	return &models.LabEnrollment{
+		UserID: req.UserID,
+		LabID:  req.LabID,
+	}
+}
+
+func ToEnrollmentResponse(e *models.LabEnrollment) *dto.EnrollmentResponse {
+	if e == nil {
+		return nil
+	}
+	return &dto.EnrollmentResponse{
+		UserID:      e.UserID,
+		LabID:       e.LabID,
+		Status:      e.Status,
+		ProgressPct: e.ProgressPct,
+		EnrolledAt:  e.EnrolledAt,
+		CompletedAt: e.CompletedAt,
+	}
+}
+
+func ToEnrollmentResponses(enrollments []models.LabEnrollment) []dto.EnrollmentResponse {
+	res := make([]dto.EnrollmentResponse, len(enrollments))
+	for i, e := range enrollments {
+		res[i] = *ToEnrollmentResponse(&e)
+	}
+	return res
+}
