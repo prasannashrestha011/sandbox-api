@@ -203,12 +203,17 @@ func ToChapterModelFromUpdateRequest(req *dto.UpdateChapterRequest) *models.Chap
 	return ch
 }
 
-func ToEnrollmentToModel(req *dto.EnrollmentRequest) *models.LabEnrollment {
+func ToEnrollmentToModel(ctx context.Context, req *dto.EnrollmentRequest) *models.LabEnrollment {
+
 	if req == nil {
 		return nil
 	}
+	userID, ok := request_context.UserID(ctx)
+	if !ok {
+		return nil
+	}
 	return &models.LabEnrollment{
-		UserID: req.UserID,
+		UserID: userID.String(),
 		LabID:  req.LabID,
 	}
 }
