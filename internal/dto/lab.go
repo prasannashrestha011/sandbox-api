@@ -3,6 +3,8 @@ package dto
 import (
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type CreateLabRequest struct {
@@ -166,4 +168,78 @@ type EnrollmentResponse struct {
 	ProgressPct int        `json:"progressPct"`
 	EnrolledAt  time.Time  `json:"enrolledAt"`
 	CompletedAt *time.Time `json:"completedAt,omitempty"`
+}
+
+type SubmissionRequest struct {
+	ExerciseID string `json:"exerciseId" binding:"required"`
+	UserID     string `json:"userId" binding:"required"`
+	Language   string `json:"language" binding:"required"`
+	Code       string `json:"code" binding:"required"`
+}
+
+func (s *SubmissionRequest) Sanitize() {
+	s.ExerciseID = strings.TrimSpace(s.ExerciseID)
+	s.UserID = strings.TrimSpace(s.UserID)
+	s.Language = strings.ToLower(strings.TrimSpace(s.Language))
+	s.Code = strings.TrimSpace(s.Code)
+}
+func (s *SubmissionRequest) Validate() error {
+	var v ValidationErrors
+	s.Sanitize()
+
+	if s.ExerciseID == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "exerciseId",
+			Message: "exerciseId is required",
+		})
+	}
+	if s.UserID == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "userId",
+			Message: "userId is required",
+		})
+	}
+	if _, err := uuid.Parse(s.ExerciseID); err != nil {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "exerciseId",
+			Message: "exerciseId must be a valid UUID",
+		})
+	}
+	if _, err := uuid.Parse(s.UserID); err != nil {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "userId",
+			Message: "userId must be a valid UUID",
+		})
+	}
+
+	if s.Language == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "language",
+			Message: "language is required",
+		})
+	}
+	if s.Code == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "code",
+			Message: "code is required",
+		})
+	}
+
+	if len(v.Violations) > 0 {
+		return &v
+	}
+	return nil
+}
+
+type SubmissionResponse struct {
+	ID          string    `json:"id"`
+	ExerciseID  string    `json:"exerciseId"`
+	UserID      string    `json:"userId"`
+	Language    string    `json:"language"`
+	Code        string    `json:"code"`
+	Output      string    `json:"output,omitempty"`
+	Status      string    `json:"status"` // pending | running | completed
+	Score       int       `json:"score,omitempty"`
+	AttemptNo   int       `json:"attemptNo"`
+	SubmittedAt time.Time `json:"submittedAt"`
 }
