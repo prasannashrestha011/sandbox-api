@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	request_context "main/internal/context"
 	"main/internal/domain"
 	"main/internal/dto"
 	"main/internal/pkg"
@@ -34,15 +35,18 @@ func (h *EnrollmentController) EnrollUserToLab(w http.ResponseWriter, r *http.Re
 }
 
 func (h *EnrollmentController) GetEnrollment(w http.ResponseWriter, r *http.Request) error {
-	userID := pkg.ExtractParam(r, "userId")
+	userID, ok := request_context.UserID(r.Context())
+	if !ok {
+		return domain.InvalidRequestError("user id not found in context", nil)
+	}
 	labID := pkg.ExtractParam(r, "labId")
-	if err := validateUUID(userID, "user"); err != nil {
+	if err := validateUUID(userID.String(), "user"); err != nil {
 		return err
 	}
 	if err := validateUUID(labID, "lab"); err != nil {
 		return err
 	}
-	resp, err := h.enrollmentService.GetEnrollment(r.Context(), userID, labID)
+	resp, err := h.enrollmentService.GetEnrollment(r.Context(), userID.String(), labID)
 	if err != nil {
 		return err
 	}
@@ -64,15 +68,18 @@ func (h *EnrollmentController) GetUserEnrollments(w http.ResponseWriter, r *http
 }
 
 func (h *EnrollmentController) DeleteEnrollment(w http.ResponseWriter, r *http.Request) error {
-	userID := pkg.ExtractParam(r, "userId")
+	userID, ok := request_context.UserID(r.Context())
+	if !ok {
+		return domain.InvalidRequestError("user id not found in context", nil)
+	}
 	labID := pkg.ExtractParam(r, "labId")
-	if err := validateUUID(userID, "user"); err != nil {
+	if err := validateUUID(userID.String(), "user"); err != nil {
 		return err
 	}
 	if err := validateUUID(labID, "lab"); err != nil {
 		return err
 	}
-	err := h.enrollmentService.DeleteEnrollment(r.Context(), userID, labID)
+	err := h.enrollmentService.DeleteEnrollment(r.Context(), userID.String(), labID)
 	if err != nil {
 		return err
 	}
