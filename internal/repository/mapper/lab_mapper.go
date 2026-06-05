@@ -178,12 +178,12 @@ func EnrollmentToGorm(e *service_model.LabEnrollment) *gorm_model.LabEnrollment 
 		return nil
 	}
 	return &gorm_model.LabEnrollment{
-		UserID:      e.UserID,
-		LabID:       e.LabID,
-		Status:      e.Status,
-		ProgressPct: e.ProgressPct,
-		EnrolledAt:  e.EnrolledAt,
-		CompletedAt: e.CompletedAt,
+		EnrolledUserID: e.UserID,
+		LabID:          e.LabID,
+		Status:         e.Status,
+		ProgressPct:    e.ProgressPct,
+		EnrolledAt:     e.EnrolledAt,
+		CompletedAt:    e.CompletedAt,
 	}
 }
 func EnrollmentFromGorm(e *gorm_model.LabEnrollment) *service_model.LabEnrollment {
@@ -191,7 +191,7 @@ func EnrollmentFromGorm(e *gorm_model.LabEnrollment) *service_model.LabEnrollmen
 		return nil
 	}
 	return &service_model.LabEnrollment{
-		UserID:      e.UserID,
+		UserID:      e.EnrolledUserID,
 		LabID:       e.LabID,
 		Status:      e.Status,
 		ProgressPct: e.ProgressPct,
