@@ -2,9 +2,15 @@ package lab_services
 
 import (
 	"context"
+	"fmt"
+	"log"
+	request_context "main/internal/context"
+	"main/internal/domain"
 	"main/internal/dto"
+	"main/internal/enums"
 	postgres_error "main/internal/infra/postgres"
 	repository "main/internal/repository/lab"
+
 	"main/internal/services/mapper"
 )
 
@@ -25,7 +31,15 @@ func NewEnrollmentService(enrollmentRepo repository.EnrollmentRepository) Enroll
 
 // EnrollUserToLab implements [EnrollmentService].
 func (e *enrollmentService) EnrollUserToLab(ctx context.Context, req *dto.EnrollmentRequest) error {
-	enrollment := mapper.ToEnrollmentToModel(req)
+	userType, ok := request_context.UserType(ctx)
+	log.Println("User Type", userType)
+	if !ok {
+		return postgres_error.MapError(fmt.Errorf("user type not found"), "enroll user", "enrollment")
+	}
+	if userType != enums.UserTypeStudent {
+		return domain.InvalidRequestError("only students can enroll to labs", nil)
+	}
+	enrollment := mapper.ToEnrollmentToModel(ctx, req)
 	err := e.enrollmentRepo.EnrollUserToLab(ctx, enrollment)
 	if err != nil {
 		return postgres_error.MapError(err, "enroll user", "enrollment")
