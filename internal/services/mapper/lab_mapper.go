@@ -239,3 +239,43 @@ func ToEnrollmentResponses(enrollments []models.LabEnrollment) []dto.EnrollmentR
 	}
 	return res
 }
+
+func ToSubmissionModel(ctx context.Context, req *dto.SubmissionRequest) *models.Submission {
+	if req == nil {
+		return nil
+	}
+	userID, ok := request_context.UserID(ctx)
+	if !ok {
+		return nil
+	}
+	return &models.Submission{
+		UserID:     userID.String(),
+		ExerciseID: req.ExerciseID,
+		Code:       req.Code,
+	}
+}
+func ToSubmissionResponse(s *models.Submission) *dto.SubmissionResponse {
+	if s == nil {
+		return nil
+	}
+	return &dto.SubmissionResponse{
+		ID:          s.ID,
+		UserID:      s.UserID,
+		ExerciseID:  s.ExerciseID,
+		Code:        s.Code,
+		Language:    s.Language,
+		Output:      s.Output,
+		Status:      s.Status,
+		Score:       s.Score,
+		AttemptNo:   s.AttemptNo,
+		SubmittedAt: s.SubmittedAt,
+	}
+}
+
+func ToSubmissionResponses(submissions []models.Submission) []dto.SubmissionResponse {
+	res := make([]dto.SubmissionResponse, len(submissions))
+	for i, s := range submissions {
+		res[i] = *ToSubmissionResponse(&s)
+	}
+	return res
+}
