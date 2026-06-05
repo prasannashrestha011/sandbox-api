@@ -9,16 +9,17 @@ import (
 )
 
 // stands before lab routes. User with instructor privileges can only access the lab routes.
+// hides the lab routes from students
 func UserTypeMiddlware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		userType, ok := request_context.UserType(r.Context())
 		log.Println("User type from context: ", userType, "ok: ", ok)
 		if !ok {
-			http.Error(w, "User type not found in context", http.StatusUnauthorized)
+			http.NotFound(w, r)
 			return
 		}
 		if userType != enums.UserTypeInstructor {
-			http.Error(w, "Forbidden: only instructor can access this resource", http.StatusForbidden)
+			http.NotFound(w, r)
 			return
 		}
 		next.ServeHTTP(w, r)

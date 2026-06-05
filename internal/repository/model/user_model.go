@@ -9,7 +9,7 @@ import (
 )
 
 type User struct {
-	UserID    uuid.UUID      `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
+	UserID    string         `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
 	Fullname  string         `gorm:"type:varchar(100);not null"`
 	Username  string         `gorm:"type:varchar(50);uniqueIndex;not null"`
 	Password  string         `gorm:"type:varchar(255);not null"`
@@ -21,6 +21,6 @@ type User struct {
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) error {
-	u.UserID = uuid.New()
+	u.UserID = uuid.New().String()
 	return nil
 }

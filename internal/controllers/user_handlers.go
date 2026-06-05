@@ -151,7 +151,7 @@ func (c *UserController) UpdateUser(w http.ResponseWriter, r *http.Request) erro
 		return domain.InvalidRequestError("invalid request body", err)
 	}
 
-	input.UserID = userID
+	input.UserID = userID.String()
 
 	user := mapper.UpdateUserInputToModel(&input)
 	if user == nil {

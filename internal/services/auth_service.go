@@ -56,7 +56,7 @@ func (s *authService) Authenticate(ctx context.Context, username, password strin
 	}
 
 	if err := s.refreshTokenRepo.Create(ctx, &model.RefreshToken{
-		UserID:    user.UserID.String(),
+		UserID:    user.UserID,
 		TokenHash: hashing.HashToken(refreshToken),
 		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
 	}); err != nil {

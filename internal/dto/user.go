@@ -3,12 +3,10 @@ package dto
 import (
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type User struct {
-	UserID    uuid.UUID `json:"user_id,omitempty"`
+	UserID    string    `json:"user_id,omitempty"`
 	Fullname  string    `json:"fullname,omitempty"`
 	Username  string    `json:"username,omitempty"`
 	Role      string    `json:"role,omitempty"` // "admin" or "user"
@@ -75,10 +73,10 @@ func (r *CreateUserInput) Validate() error {
 
 // ### UpdateUserInput captures profile updates. ###
 type UpdateUserInput struct {
-	UserID   uuid.UUID `json:"user_id,omitempty"`
-	Fullname string    `json:"fullname,omitempty"`
-	Username string    `json:"username,omitempty"`
-	Role     string    `json:"role,omitempty"` // "admin" or "user"
+	UserID   string `json:"user_id,omitempty"`
+	Fullname string `json:"fullname,omitempty"`
+	Username string `json:"username,omitempty"`
+	Role     string `json:"role,omitempty"` // "admin" or "user"
 }
 
 func (r *UpdateUserInput) Sanitize() {
@@ -128,8 +126,8 @@ type UserCreate struct {
 
 // UserPasswordUpdate is used internally when updating the password.
 type UserPasswordUpdate struct {
-	UserID       uuid.UUID `json:"user_id,omitempty"`
-	PasswordHash string    `json:"password_hash,omitempty"`
+	UserID       string `json:"user_id,omitempty"`
+	PasswordHash string `json:"password_hash,omitempty"`
 }
 
 // LoginInput is used for authentication input.
