@@ -44,7 +44,7 @@ func (s *userService) Create(ctx context.Context, user *model.User) error {
 
 	err = s.userrepo.Create(ctx, user)
 	if err != nil {
-		return postgres_error.MapError(err, "create user", "user").Err
+		return postgres_error.MapError(err, "create user", "user")
 	}
 	return nil
 }
