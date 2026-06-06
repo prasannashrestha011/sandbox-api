@@ -30,3 +30,10 @@ const (
 	ProgressInProgress LabProgress = "in_progress"
 	ProgressCompleted  LabProgress = "completed"
 )
+
+type SubmissionStatus string
+
+const (
+	SubmissionAccepted SubmissionStatus = "accepted"
+	SubmissionRejected SubmissionStatus = "rejected"
+)
