@@ -1,6 +1,7 @@
 package models
 
 import (
+	"main/internal/enums"
 	"time"
 )
 
@@ -51,7 +52,7 @@ type Submission struct {
 	Code        string
 	Language    string
 	Output      string
-	Status      string // passed | failed | runtime_error
+	Status      enums.SubmissionStatus
 	Score       int
 	AttemptNo   int
 	SubmittedAt time.Time
