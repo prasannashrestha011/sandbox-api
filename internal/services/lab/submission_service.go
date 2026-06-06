@@ -3,8 +3,10 @@ package lab_services
 import (
 	"context"
 	"main/internal/dto"
+	"main/internal/enums"
 	repository "main/internal/repository/lab"
 	"main/internal/services/mapper"
+	"strings"
 )
 
 type SubmissionService interface {
@@ -17,17 +19,33 @@ type SubmissionService interface {
 
 type submissionService struct {
 	submissionRepo repository.SubmissionRepository
+	exerciseRepo   repository.ExerciseRepository
 }
 
-func NewSubmissionService(submissionRepo repository.SubmissionRepository) SubmissionService {
+func NewSubmissionService(submissionRepo repository.SubmissionRepository, exerciseRepo repository.ExerciseRepository) SubmissionService {
 	return &submissionService{
 		submissionRepo: submissionRepo,
+		exerciseRepo:   exerciseRepo,
 	}
 }
 
 func (s *submissionService) CreateSubmission(ctx context.Context, exerciseID string, req *dto.SubmissionRequest) (*dto.SubmissionResponse, error) {
-	submissonModel := mapper.ToSubmissionModel(ctx, exerciseID, req)
-	submission, err := s.submissionRepo.CreateSubmission(ctx, submissonModel)
+	submissionModel := mapper.ToSubmissionModel(ctx, exerciseID, req)
+	exercise, err := s.exerciseRepo.GetExerciseByID(ctx, exerciseID)
+	if err != nil {
+		return nil, err
+	}
+	if strings.TrimSpace(submissionModel.Output) == strings.TrimSpace(exercise.ExpectedOutput) {
+		submissionModel.Status = enums.SubmissionAccepted
+	} else {
+		submissionModel.Status = enums.SubmissionRejected
+	}
+	if submissionModel.Status == enums.SubmissionAccepted {
+		submissionModel.Score = 100
+	} else {
+		submissionModel.Score = 0
+	}
+	submission, err := s.submissionRepo.CreateSubmission(ctx, submissionModel)
 	if err != nil {
 		return nil, err
 	}
