@@ -147,12 +147,12 @@ func (r *ExecuteCodeRequest) Validate() error {
 
 // CreateResponse : sandbox creation result
 type CreateResponse struct {
-	ContainerID string
-	SessionID   uuid.UUID
-	Status      enums.SandboxState
-	CreatedAt   time.Time
-	ExpiresAt   time.Time
-	Error       *string
+	ContainerID string             `json:"container_id"`
+	SessionID   uuid.UUID          `json:"session_id"`
+	Status      enums.SandboxState `json:"status"`
+	CreatedAt   time.Time          `json:"created_at"`
+	ExpiresAt   time.Time          `json:"expires_at"`
+	Error       *string            `json:"error"`
 }
 
 // CodeResponse represents the response structure for code execution results.
