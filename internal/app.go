@@ -29,6 +29,7 @@ type Repos struct {
 	ChapterRepo     lab_repo.ChapterRepository
 	ExerciseRepo    lab_repo.ExerciseRepository
 	EnrollmentRepo  lab_repo.EnrollmentRepository
+	SubmissionRepo  lab_repo.SubmissionRepository
 }
 
 // Services groups all services.
@@ -41,6 +42,7 @@ type Services struct {
 	ChapterService     lab_services.ChapterService
 	ExerciseService    lab_services.ExerciseService
 	EnrollmentService  lab_services.EnrollmentService
+	SubmissionService  lab_services.SubmissionService
 }
 
 // Controllers groups all controllers.
@@ -55,6 +57,7 @@ type Controllers struct {
 	ChapterController    *lab_handler.ChapterController
 	ExerciseController   *lab_handler.ExerciseHandler
 	EnrollmentController *lab_handler.EnrollmentController
+	SubmissionController *lab_handler.SubmissionHandler
 }
 
 // App wires repositories, services, controllers, and routes.
@@ -83,6 +86,7 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		ChapterRepo:     lab_repo.NewChapterRepository(db),
 		ExerciseRepo:    lab_repo.NewExerciseRepository(db),
 		EnrollmentRepo:  lab_repo.NewEnrollmentRepository(db),
+		SubmissionRepo:  lab_repo.NewSubmissionRepository(db),
 	}
 
 	servicesGroup := Services{
@@ -94,6 +98,7 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		ChapterService:     lab_services.NewChapterService(repos.ChapterRepo),
 		ExerciseService:    lab_services.NewExerciseService(repos.ExerciseRepo),
 		EnrollmentService:  lab_services.NewEnrollmentService(repos.EnrollmentRepo),
+		SubmissionService:  lab_services.NewSubmissionService(repos.SubmissionRepo, repos.ExerciseRepo),
 	}
 
 	controllersGroup := Controllers{
@@ -106,6 +111,7 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		ChapterController:    lab_handler.NewChapterController(servicesGroup.ChapterService),
 		ExerciseController:   lab_handler.NewExerciseHandler(servicesGroup.ExerciseService),
 		EnrollmentController: lab_handler.NewEnrollmentController(servicesGroup.EnrollmentService),
+		SubmissionController: lab_handler.NewSubmissionHandler(servicesGroup.SubmissionService),
 	}
 
 	//listeners for sandbox events (e.g., cleanup after timeout)
@@ -125,7 +131,12 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 	routes.RegisterSandboxRoutes(router, controllersGroup.SandboxController)
 	routes.RegisterUserRoutes(router, controllersGroup.UserController)
 	routes.RegisterDockerImageRoutes(router, controllersGroup.DockerImageController)
-	routes.RegisterLabRoutes(router, controllersGroup.LabController, controllersGroup.ChapterController, controllersGroup.ExerciseController, controllersGroup.EnrollmentController)
+	routes.RegisterLabRoutes(router,
+		controllersGroup.LabController,
+		controllersGroup.ChapterController,
+		controllersGroup.ExerciseController,
+		controllersGroup.EnrollmentController,
+		controllersGroup.SubmissionController)
 	// websocket.RegisterWebSocketRoutes(router, controllersGroup.WebSocketController)
 	return &App{
 		Repos:       repos,
