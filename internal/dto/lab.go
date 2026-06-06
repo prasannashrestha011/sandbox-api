@@ -172,15 +172,12 @@ type EnrollmentResponse struct {
 
 type SubmissionRequest struct {
 	ExerciseID string `json:"exerciseId" binding:"required"`
-	UserID     string `json:"userId" binding:"required"`
-	Language   string `json:"language" binding:"required"`
 	Code       string `json:"code" binding:"required"`
+	Output     string `json:"output,omitempty"`
 }
 
 func (s *SubmissionRequest) Sanitize() {
 	s.ExerciseID = strings.TrimSpace(s.ExerciseID)
-	s.UserID = strings.TrimSpace(s.UserID)
-	s.Language = strings.ToLower(strings.TrimSpace(s.Language))
 	s.Code = strings.TrimSpace(s.Code)
 }
 func (s *SubmissionRequest) Validate() error {
@@ -193,31 +190,13 @@ func (s *SubmissionRequest) Validate() error {
 			Message: "exerciseId is required",
 		})
 	}
-	if s.UserID == "" {
-		v.Violations = append(v.Violations, FieldViolation{
-			Field:   "userId",
-			Message: "userId is required",
-		})
-	}
 	if _, err := uuid.Parse(s.ExerciseID); err != nil {
 		v.Violations = append(v.Violations, FieldViolation{
 			Field:   "exerciseId",
 			Message: "exerciseId must be a valid UUID",
 		})
 	}
-	if _, err := uuid.Parse(s.UserID); err != nil {
-		v.Violations = append(v.Violations, FieldViolation{
-			Field:   "userId",
-			Message: "userId must be a valid UUID",
-		})
-	}
 
-	if s.Language == "" {
-		v.Violations = append(v.Violations, FieldViolation{
-			Field:   "language",
-			Message: "language is required",
-		})
-	}
 	if s.Code == "" {
 		v.Violations = append(v.Violations, FieldViolation{
 			Field:   "code",
