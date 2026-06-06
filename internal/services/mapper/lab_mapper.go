@@ -252,6 +252,7 @@ func ToSubmissionModel(ctx context.Context, exerciseID string, req *dto.Submissi
 		UserID:     userID.String(),
 		ExerciseID: exerciseID,
 		Code:       req.Code,
+		Output:     req.Output,
 	}
 }
 func ToSubmissionResponse(s *models.Submission) *dto.SubmissionResponse {
@@ -265,7 +266,7 @@ func ToSubmissionResponse(s *models.Submission) *dto.SubmissionResponse {
 		Code:        s.Code,
 		Language:    s.Language,
 		Output:      s.Output,
-		Status:      s.Status,
+		Status:      string(s.Status),
 		Score:       s.Score,
 		AttemptNo:   s.AttemptNo,
 		SubmittedAt: s.SubmittedAt,
