@@ -9,8 +9,12 @@ import (
 )
 
 // RegisterLabRoutes wires lab endpoints into the router.
-func RegisterLabRoutes(r chi.Router, labController *controllers.LabController, chapterController *controllers.ChapterController,
-	exerciseController *controllers.ExerciseHandler, enrollmentController *controllers.EnrollmentController) {
+func RegisterLabRoutes(r chi.Router,
+	labController *controllers.LabController,
+	chapterController *controllers.ChapterController,
+	exerciseController *controllers.ExerciseHandler,
+	enrollmentController *controllers.EnrollmentController,
+	submissionController *controllers.SubmissionHandler) {
 	r.Route("/labs", func(sr chi.Router) {
 		sr.Use(proxy.AuthMiddleware)
 		//instructors routes
@@ -31,16 +35,24 @@ func RegisterLabRoutes(r chi.Router, labController *controllers.LabController, c
 					response.WrapGet(er, "/{exerciseId}", exerciseController.GetExerciseByID)
 					response.WrapPut(er, "/{exerciseId}", exerciseController.UpdateExercise)
 					response.WrapDelete(er, "/{exerciseId}", exerciseController.DeleteExercise)
+
 				})
 			})
-		})
-		//students routes
-		sr.Route("/enrollments", func(er chi.Router) {
-			response.WrapPost(er, "/", enrollmentController.EnrollUserToLab)
-			response.WrapGet(er, "/{labId}", enrollmentController.GetEnrollment)
-			response.WrapGet(er, "/user/{userId}", enrollmentController.GetUserEnrollments)
-			response.WrapDelete(er, "/{labId}", enrollmentController.DeleteEnrollment)
-		})
+			//students routes
+			sr.Route("/enrollments", func(er chi.Router) {
+				response.WrapPost(er, "/", enrollmentController.EnrollUserToLab)
+				response.WrapGet(er, "/{labId}", enrollmentController.GetEnrollment)
+				response.WrapGet(er, "/user", enrollmentController.GetUserEnrollments)
+				response.WrapDelete(er, "/{labId}", enrollmentController.DeleteEnrollment)
+			})
 
+			sr.Route("/{exerciseId}/submissions", func(subr chi.Router) {
+				response.WrapPost(subr, "/", submissionController.CreateSubmission)
+				response.WrapGet(subr, "/", submissionController.ListSubmissions)
+				response.WrapGet(subr, "/{id}", submissionController.GetSubmission)
+				response.WrapPut(subr, "/{id}", submissionController.UpdateSubmission)
+				response.WrapDelete(subr, "/{id}", submissionController.DeleteSubmission)
+			})
+		})
 	})
 }
