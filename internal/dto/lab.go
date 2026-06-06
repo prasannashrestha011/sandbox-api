@@ -3,8 +3,6 @@ package dto
 import (
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type CreateLabRequest struct {
@@ -171,31 +169,16 @@ type EnrollmentResponse struct {
 }
 
 type SubmissionRequest struct {
-	ExerciseID string `json:"exerciseId" binding:"required"`
-	Code       string `json:"code" binding:"required"`
-	Output     string `json:"output,omitempty"`
+	Code   string `json:"code" binding:"required"`
+	Output string `json:"output,omitempty"`
 }
 
 func (s *SubmissionRequest) Sanitize() {
-	s.ExerciseID = strings.TrimSpace(s.ExerciseID)
 	s.Code = strings.TrimSpace(s.Code)
 }
 func (s *SubmissionRequest) Validate() error {
 	var v ValidationErrors
 	s.Sanitize()
-
-	if s.ExerciseID == "" {
-		v.Violations = append(v.Violations, FieldViolation{
-			Field:   "exerciseId",
-			Message: "exerciseId is required",
-		})
-	}
-	if _, err := uuid.Parse(s.ExerciseID); err != nil {
-		v.Violations = append(v.Violations, FieldViolation{
-			Field:   "exerciseId",
-			Message: "exerciseId must be a valid UUID",
-		})
-	}
 
 	if s.Code == "" {
 		v.Violations = append(v.Violations, FieldViolation{
