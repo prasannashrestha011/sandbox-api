@@ -12,6 +12,7 @@ import (
 	"main/internal/domain"
 	"main/internal/dto"
 	"main/internal/pkg"
+	"main/internal/response"
 	"main/internal/services"
 )
 
@@ -39,7 +40,7 @@ func (c *SandboxController) CreateSandbox(w http.ResponseWriter, r *http.Request
 		return err
 	}
 
-	writeJSON(w, http.StatusCreated, mapper.SandboxServiceModelToCreateResponse(sandbox))
+	response.WriteJSON(w, r, http.StatusCreated, "sandbox created", mapper.SandboxServiceModelToCreateResponse(sandbox), nil)
 	return nil
 }
 
@@ -55,7 +56,7 @@ func (c *SandboxController) GetSandboxByID(w http.ResponseWriter, r *http.Reques
 		return err
 	}
 
-	writeJSON(w, http.StatusOK, sandbox)
+	response.WriteJSON(w, r, http.StatusOK, "sandbox found", mapper.SandboxServiceModelToCreateResponse(sandbox), nil)
 	return nil
 }
 
@@ -71,7 +72,7 @@ func (c *SandboxController) GetSandboxBySessionID(w http.ResponseWriter, r *http
 		return err
 	}
 
-	writeJSON(w, http.StatusOK, sandbox)
+	response.WriteJSON(w, r, http.StatusOK, "sandbox found", mapper.SandboxServiceModelToCreateResponse(sandbox), nil)
 	return nil
 }
 
@@ -85,7 +86,7 @@ func (c *SandboxController) ListSandboxesByUser(w http.ResponseWriter, r *http.R
 	if err != nil {
 		return err
 	}
-	writeJSON(w, http.StatusOK, items)
+	response.WriteJSON(w, r, http.StatusOK, "sandboxes found", items, nil)
 	return nil
 }
 
@@ -120,12 +121,6 @@ func (c *SandboxController) ExecuteCode(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	writeJSON(w, http.StatusOK, map[string]string{"result": result})
+	response.WriteJSON(w, r, http.StatusOK, "code executed", map[string]string{"result": result}, nil)
 	return nil
-}
-
-func writeJSON(w http.ResponseWriter, status int, payload any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(payload)
 }
