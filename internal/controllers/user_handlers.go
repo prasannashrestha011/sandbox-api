@@ -128,7 +128,7 @@ func (c *UserController) RefreshAccessToken(w http.ResponseWriter, r *http.Reque
 	}
 
 	jwtutil.JwtUtil.SetAuthCookie(w, accessToken, refreshToken)
-	writeJSON(w, http.StatusOK, map[string]interface{}{"message": "access token refreshed", "status": true})
+	response.WriteJSON(w, r, http.StatusOK, "access token refreshed", map[string]interface{}{"message": "access token refreshed", "status": true}, nil)
 	return nil
 }
 
@@ -167,7 +167,7 @@ func (c *UserController) UpdateUser(w http.ResponseWriter, r *http.Request) erro
 		return err
 	}
 
-	writeJSON(w, http.StatusOK, mapper.UserModelToDTO(updated))
+	response.WriteJSON(w, r, http.StatusOK, "user updated", mapper.UserModelToDTO(updated), nil)
 	return nil
 }
 
@@ -191,7 +191,7 @@ func (c *UserController) UpdatePassword(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	writeJSON(w, http.StatusOK, map[string]string{"status": "updated"})
+	response.WriteJSON(w, r, http.StatusOK, "password updated", map[string]string{"status": "updated"}, nil)
 	return nil
 }
 
@@ -213,7 +213,7 @@ func parseUUIDParam(w http.ResponseWriter, r *http.Request, key string) (uuid.UU
 	idStr := chi.URLParam(r, key)
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid id"})
+		response.WriteJSON(w, r, http.StatusBadRequest, "invalid id", map[string]string{"error": "invalid id"}, nil)
 		return uuid.Nil, false
 	}
 	return id, true
