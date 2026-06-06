@@ -55,11 +55,14 @@ func (h *EnrollmentController) GetEnrollment(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *EnrollmentController) GetUserEnrollments(w http.ResponseWriter, r *http.Request) error {
-	userID := pkg.ExtractParam(r, "userId")
-	if err := validateUUID(userID, "user"); err != nil {
+	userID, ok := request_context.UserID(r.Context())
+	if !ok {
+		return domain.InvalidRequestError("user id not found in context", nil)
+	}
+	if err := validateUUID(userID.String(), "user"); err != nil {
 		return err
 	}
-	resp, err := h.enrollmentService.GetUserEnrollments(r.Context(), userID)
+	resp, err := h.enrollmentService.GetUserEnrollments(r.Context(), userID.String())
 	if err != nil {
 		return err
 	}
