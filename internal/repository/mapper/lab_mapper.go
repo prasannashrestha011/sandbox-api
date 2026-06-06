@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"main/internal/enums"
 	gorm_model "main/internal/repository/model/lab"
 	service_model "main/internal/services/models"
 )
@@ -222,7 +223,7 @@ func SubmissionToGorm(s *service_model.Submission) *gorm_model.Submission {
 		Language:    s.Language,
 		Code:        s.Code,
 		Output:      s.Output,
-		Status:      s.Status,
+		Status:      string(s.Status),
 		Score:       s.Score,
 		AttemptNo:   s.AttemptNo,
 		SubmittedAt: s.SubmittedAt,
@@ -239,7 +240,7 @@ func SubmissionFromGorm(s *gorm_model.Submission) *service_model.Submission {
 		Language:    s.Language,
 		Code:        s.Code,
 		Output:      s.Output,
-		Status:      s.Status,
+		Status:      enums.SubmissionStatus(s.Status),
 		Score:       s.Score,
 		AttemptNo:   s.AttemptNo,
 		SubmittedAt: s.SubmittedAt,
