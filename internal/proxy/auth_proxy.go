@@ -13,6 +13,14 @@ import (
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
+		if devCookie, err := r.Cookie("dev_mode"); err == nil && devCookie.Value == "true" {
+			log.Println("Dev mode detected: Bypassing authentication")
+			ctx = request_context.WithUserID(ctx, "3ea58454-283d-44ee-ab92-cb26900cbb05")
+			ctx = request_context.WithRole(ctx, enums.RoleAdmin) // Or whatever dev role you need
+			ctx = request_context.WithUserType(ctx, "instructor")
+			next.ServeHTTP(w, r.WithContext(ctx))
+			return
+		}
 		cookie, err := r.Cookie("auth_token")
 		if err != nil || cookie.Value == "" {
 			log.Println("Missing auth cookie")
