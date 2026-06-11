@@ -4,20 +4,20 @@ import (
 	"context"
 	"log"
 
-	"main/internal/repository/model"
+	"main/internal/dto"
 	"main/internal/sandbox/docker/container"
 	sb_executil "main/internal/sandbox/docker/executil"
 	"main/internal/sandbox/docker/image"
+	"main/internal/services/models"
 
-	"github.com/google/uuid"
 	"github.com/moby/moby/api/types/events"
 	"github.com/moby/moby/client"
 )
 
 // SandboxClient defines sandbox lifecycle operations.
 type SandboxClient interface {
-	Create(ctx context.Context, req *model.Sandbox) error
-	ExecuteCode(ctx context.Context, containerID string, cmd []string) (string, error)
+	Create(ctx context.Context, req *models.SandboxTemplate) (containerID string, containerName string, err error)
+	ExecuteCode(ctx context.Context, containerID string, cmd []string) (*dto.SandboxExecResponse, error)
 	CleanUp(ctx context.Context, handler func(containerID []string)) error
 	ListenContainerEvents(ctx context.Context, handler func(containerID string)) error
 	Close() error
@@ -39,31 +39,27 @@ func NewSandboxClient() (SandboxClient, error) {
 	return &dockerSandboxClient{apiClient: apiClient}, nil
 }
 
-func (c *dockerSandboxClient) Create(ctx context.Context, req *model.Sandbox) error {
+func (c *dockerSandboxClient) Create(ctx context.Context, req *models.SandboxTemplate) (containerID string, containerName string, err error) {
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, req.SessionTimeout)
 	defer cancel()
 
 	log.Println("Image tag: ", req.Image.ImageTag)
-	err := image.PullImage(ctxWithTimeout, c.apiClient, req.Image.ImageTag)
+	err = image.PullImage(ctxWithTimeout, c.apiClient, req.Image.ImageTag)
 	if err != nil {
-		return err
+		return "", "", err
 	}
-	containerID, err := container.CreateContainer(ctxWithTimeout, c.apiClient, req)
+	containerID, containerName, err = container.CreateContainer(ctxWithTimeout, c.apiClient, req)
 	if err != nil {
-		return err
+		return "", "", err
 	}
 	log.Println("Container ID: ", containerID)
 	_, err = c.apiClient.ContainerStart(ctxWithTimeout, containerID, client.ContainerStartOptions{})
 	if err != nil {
-		return err
+		return "", "", err
 	}
-
-	sessionID, _ := uuid.NewUUID()
-	req.SessionID = sessionID
-	req.ContainerID = containerID
-	return nil
+	return containerID, containerName, nil
 }
-func (c *dockerSandboxClient) ExecuteCode(ctx context.Context, containerID string, cmd []string) (string, error) {
+func (c *dockerSandboxClient) ExecuteCode(ctx context.Context, containerID string, cmd []string) (*dto.SandboxExecResponse, error) {
 	return sb_executil.ExecCreate(ctx, c.apiClient, containerID, cmd)
 }
 
