@@ -11,7 +11,6 @@ import (
 
 	app "main/internal"
 	"main/internal/database"
-	"main/internal/repository/model"
 	"main/internal/sandbox/core"
 	jwtutil "main/internal/security/jwt"
 )
@@ -70,12 +69,12 @@ func main() {
 		log.Printf("server shutdown error: %v", err)
 	}
 	apiClient.CleanUp(ctx, func(containerIDs []string) {
-		log.Println("Cleaning up containers details from database: ", containerIDs)
-		res := db.Where("container_id IN ?", containerIDs).Delete(&model.Sandbox{})
-		log.Println("Rows affected: ", res.RowsAffected)
-		if res.Error != nil {
-			log.Println("Error cleaning up containers details from database: ", res.Error)
-		}
+		// log.Println("Cleaning up containers details from database: ", containerIDs)
+		// res := db.Where("container_id IN ?", containerIDs).Delete(&model.Sandbox{})
+		// log.Println("Rows affected: ", res.RowsAffected)
+		// if res.Error != nil {
+		// 	log.Println("Error cleaning up containers details from database: ", res.Error)
+		// }
 	})
 
 	log.Println("Server stopped")
