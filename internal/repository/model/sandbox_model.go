@@ -1,45 +1,31 @@
 package model
 
 import (
-	"main/internal/enums"
 	"time"
-
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
-// Sandbox is the GORM model for a sandbox session.
-type Sandbox struct {
-	ID             uuid.UUID     `gorm:"type:uuid;primaryKey"`
-	UserID         string        `gorm:"not null;index"`
-	Environment    string        `gorm:"not null"`
-	ImageID        string        `gorm:"type:uuid;not null"`
-	Image          DockerImage   `gorm:"foreignKey:ImageID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
-	MemoryLimit    int64         `gorm:"not null"`
-	CPULimit       int64         `gorm:"not null"`
-	PidsLimit      int64         `gorm:"not null"`
-	SessionTimeout time.Duration `gorm:"not null"`
-	ExecTimeout    time.Duration `gorm:"not null"`
-	NetworkMode    string        `gorm:"not null"`
+type SandboxSession struct {
+	ID string `gorm:"type:uuid;primaryKey"`
 
-	ContainerName string             `gorm:"not null;uniqueIndex"`
-	ContainerID   string             `gorm:"index"`
-	SessionID     uuid.UUID          `gorm:"type:uuid;not null;uniqueIndex"`
-	Status        enums.SandboxState `gorm:"type:varchar(16);not null"`
-	ExpiresAt     time.Time          `gorm:"not null;index"`
+	// ownership
+	UserID string `gorm:"not null;index"`
+
+	// link to template
+	TemplateID string `gorm:"not null;index"`
+
+	Lang string `gorm:"not null"`
+	// runtime container info
+	ContainerID   string
+	ContainerName string
+
+	// lifecycle
+	Status string `gorm:"not null;index"` // running, stopped, expired, failed
+
+	// time control
+	StartedAt time.Time
+	ExpiresAt time.Time
+	EndedAt   *time.Time
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
-}
-
-// BeforeCreate ensures UUIDs are set before persisting.
-func (s *Sandbox) BeforeCreate(tx *gorm.DB) error {
-	if s.ID == uuid.Nil {
-		s.ID = uuid.New()
-	}
-	if s.SessionID == uuid.Nil {
-		s.SessionID = uuid.New()
-	}
-	return nil
 }
