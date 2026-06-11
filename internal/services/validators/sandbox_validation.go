@@ -12,7 +12,7 @@ const (
 
 // ValidateAndCapSandboxLimits enforces sensible resource limits, preventing
 // malicious or excessive resource allocation.
-func ValidateAndCapSandboxLimits(sandbox *models.Sandbox) {
+func ValidateAndCapSandboxLimits(sandbox *models.SandboxTemplate) {
 	if sandbox == nil {
 		return
 	}
