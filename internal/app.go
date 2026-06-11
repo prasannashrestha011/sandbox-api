@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 	"gorm.io/gorm"
 
 	"main/internal/controllers"
@@ -21,7 +22,7 @@ import (
 
 // Repos groups all repositories.
 type Repos struct {
-	SandboxRepo     repository.SandboxRepository
+	SandboxRepo     repository.SandboxTemplateRepository
 	UserRepo        repository.UserRepository
 	RefreshRepo     repository.RefreshTokenRepository
 	DockerImageRepo repository.DockerImageRepository
@@ -34,7 +35,7 @@ type Repos struct {
 
 // Services groups all services.
 type Services struct {
-	SandboxService     services.SandboxService
+	SandboxService     services.SandboxTemplateService
 	UserService        services.UserService
 	AuthService        services.AuthService
 	DockerImageService services.DockerImageService
@@ -78,7 +79,7 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 	}
 
 	repos := Repos{
-		SandboxRepo:     repository.NewSandboxRepository(db),
+		SandboxRepo:     repository.NewSandboxTemplateRepository(db),
 		UserRepo:        repository.NewUserRepository(db),
 		RefreshRepo:     repository.NewRefreshTokenRepository(db),
 		DockerImageRepo: repository.NewDockerImageRepository(db),
@@ -90,7 +91,7 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 	}
 
 	servicesGroup := Services{
-		SandboxService:     services.NewSandboxService(repos.SandboxRepo, repos.DockerImageRepo, sandboxClient),
+		SandboxService:     services.NewSandboxTemplateService(repos.SandboxRepo, repos.DockerImageRepo, sandboxClient),
 		UserService:        services.NewUserService(repos.UserRepo),
 		AuthService:        services.NewAuthService(repos.UserRepo, repos.RefreshRepo),
 		DockerImageService: services.NewDockerImageService(repos.DockerImageRepo),
@@ -118,12 +119,19 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 	go sandboxClient.ListenContainerEvents(context.Background(), func(containerID string) {
 		log.Println("Received container event for container ID: ", containerID)
 		// Find the sandbox associated with the container ID
-		err := repos.SandboxRepo.UpdateStatus(context.Background(), containerID, "inactive")
-		if err != nil {
-			log.Println("Error updating sandbox status: ", err)
-		}
+		// err := repos.SandboxRepo.UpdateStatus(context.Background(), containerID, "inactive")
+		// if err != nil {
+		// 	log.Println("Error updating sandbox status: ", err)
+		// }
 	})
 	router := chi.NewRouter()
+	router.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000", "https://yourdomain.com"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}))
 	router.Use(proxy.ResponseWriterMiddleware)
 	router.Use(proxy.ErrorMiddleware)
 	router.Use(proxy.RateLimiterMiddleware)
