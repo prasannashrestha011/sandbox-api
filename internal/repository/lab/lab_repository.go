@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm/clause"
 
 	"main/internal/repository/mapper"
-	"main/internal/repository/model"
 	lab_model "main/internal/repository/model/lab"
 	"main/internal/services/models"
 )
@@ -20,7 +19,6 @@ type labRepository struct {
 type LabRepository interface {
 	Create(ctx context.Context, l *models.Lab) (*models.Lab, error)
 	FindByID(ctx context.Context, id string) (*models.Lab, error)
-	ValidateContainerID(ctx context.Context, containerID string) (bool, error)
 	Update(ctx context.Context, l *models.Lab) error
 	Delete(ctx context.Context, id string) error
 	// Note: You can add more methods here like FindAll, ListByTeacherID, etc.
@@ -101,21 +99,6 @@ func (r *labRepository) Update(ctx context.Context, l *models.Lab) error {
 	}
 
 	return nil
-}
-
-func (r *labRepository) ValidateContainerID(ctx context.Context, containerID string) (bool, error) {
-	var count int64
-
-	err := r.db.WithContext(ctx).
-		Model(&model.Sandbox{}).
-		Where("container_id = ?", containerID).
-		Count(&count).Error
-
-	if err != nil {
-		return false, err
-	}
-
-	return count > 0, nil
 }
 
 func (r *labRepository) Delete(ctx context.Context, id string) error {
