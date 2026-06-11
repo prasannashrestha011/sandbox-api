@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 	"main/internal/pkg"
-	"main/internal/repository/model"
+	"main/internal/services/models"
 
 	"github.com/moby/moby/api/types/container"
 	"github.com/moby/moby/client"
 )
 
-func CreateContainer(ctx context.Context, apiClient *client.Client, req *model.Sandbox) (string, error) {
-	req.ContainerName, _ = pkg.GenRandomString(12)
+func CreateContainer(ctx context.Context, apiClient *client.Client, req *models.SandboxTemplate) (containerID string, containerName string, err error) {
+	containerName, _ = pkg.GenRandomString(12)
 	resp, err := apiClient.ContainerCreate(ctx, client.ContainerCreateOptions{
 		Config: &container.Config{
 			Image:     req.Image.ImageTag,
@@ -33,10 +33,10 @@ func CreateContainer(ctx context.Context, apiClient *client.Client, req *model.S
 		},
 		NetworkingConfig: nil,
 		Platform:         nil,
-		Name:             fmt.Sprintf("sandbox_%s", req.ContainerName),
+		Name:             fmt.Sprintf("sandbox_%s", containerName),
 	})
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	return resp.ID, nil
+	return resp.ID, containerName, nil
 }
