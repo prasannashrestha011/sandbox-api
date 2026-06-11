@@ -9,10 +9,10 @@ import (
 )
 
 // CreateRequest payload for the sanbox creation
-type CreateRequest struct {
+type CreateTemplateReq struct {
 	// UserID string `json:"user_id,omitempty"`
 	// Language Environment
-	Environment string `json:"environment,omitempty"`
+	Lang string `json:"lang,omitempty"`
 	// Docker Image ID
 	ImageID string `json:"image_id,omitempty"`
 
@@ -32,18 +32,28 @@ type CreateRequest struct {
 	// Sandbox network mode
 	NetworkMode string `json:"network_mode,omitempty"`
 }
+type UpdateRequest struct {
+	MemoryLimit    *int64         `json:"memory_limit,omitempty"`
+	CPULimit       *int64         `json:"cpu_limit,omitempty"`
+	PidsLimit      *int64         `json:"pids_limit,omitempty"`
+	SessionTimeout *time.Duration `json:"session_timeout,omitempty"`
+	ExecTimeout    *time.Duration `json:"exec_timeout,omitempty"`
+	NetworkMode    *string        `json:"network_mode,omitempty"`
+}
 
-func (r *CreateRequest) Sanitize() {
-	r.Environment = strings.TrimSpace(r.Environment)
+// -- resource limit for sandbox --
+
+func (r *CreateTemplateReq) Sanitize() {
+	r.Lang = strings.TrimSpace(r.Lang)
 	r.ImageID = strings.TrimSpace(r.ImageID)
 	r.NetworkMode = strings.TrimSpace(r.NetworkMode)
 }
 
-func (r *CreateRequest) Validate() error {
+func (r *CreateTemplateReq) Validate() error {
 	r.Sanitize()
 	var v ValidationErrors
 
-	if r.Environment == "" && r.ImageID == "" {
+	if r.Lang == "" && r.ImageID == "" {
 		v.Violations = append(v.Violations, FieldViolation{
 			Field:   "environment",
 			Message: "either environment or image_id is required",
@@ -83,7 +93,8 @@ type UpdateStatusRequest struct {
 
 type CreateImageRequest struct {
 	// Docker Image ID
-	ImageTag string `json:"image_tag,omitempty"`
+	ImageTag    string `json:"image_tag,omitempty"`
+	Environment string `json:"environment,omitempty"`
 }
 
 func (r *CreateImageRequest) Sanitize() {
@@ -160,4 +171,69 @@ type CodeResponse struct {
 	CorrectResult  string `json:"correctResult"`
 	ExecutedResult string `json:"executedResult"`
 	Success        bool   `json:"success"`
+}
+
+type SandboxTemplateResponse struct {
+	ID             string        `json:"id"`
+	UserID         string        `json:"user_id"`
+	ImageTag       string        `json:"image_tag,omitempty"`
+	Lang           string        `json:"lang,omitempty"`
+	MemoryLimit    int64         `json:"memory_limit,omitempty"`
+	CPULimit       int64         `json:"cpu_limit,omitempty"`
+	PidsLimit      int64         `json:"pids_limit,omitempty"`
+	SessionTimeout time.Duration `json:"session_timeout,omitempty"`
+	ExecTimeout    time.Duration `json:"exec_timeout,omitempty"`
+	NetworkMode    string        `json:"network_mode,omitempty"`
+	CreatedAt      time.Time     `json:"created_at"`
+}
+
+type CreateSessionReq struct {
+	TemplateID string `json:"template_id,omitempty"`
+}
+
+func (r *CreateSessionReq) Sanitize() {
+	r.TemplateID = strings.TrimSpace(r.TemplateID)
+}
+
+func (r *CreateSessionReq) Validate() error {
+	r.Sanitize()
+	var v ValidationErrors
+
+	if r.TemplateID == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "template_id",
+			Message: "template_id is required",
+		})
+	}
+	if _, err := uuid.Parse(r.TemplateID); err != nil {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "template_id",
+			Message: "template_id must be a valid UUID",
+		})
+	}
+
+	if len(v.Violations) > 0 {
+		return &v
+	}
+	return nil
+}
+
+type SandboxSessionResponse struct {
+	SessionID  string             `json:"session_id"`
+	TemplateID string             `json:"template_id"`
+	Status     enums.SandboxState `json:"status"`
+	CreatedAt  time.Time          `json:"created_at"`
+	ExpiresAt  time.Time          `json:"expires_at"`
+}
+
+type SandboxExecReq struct {
+	SessionID string `json:"session_id,omitempty"`
+	Command   string `json:"command,omitempty"`
+}
+
+type SandboxExecResponse struct {
+	Stdout   string        `json:"stdout"`
+	Stderr   string        `json:"stderr"`
+	ExitCode int           `json:"exit_code"`
+	ExecTime time.Duration `json:"exec_time"`
 }
