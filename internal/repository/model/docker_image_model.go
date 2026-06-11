@@ -9,12 +9,13 @@ import (
 )
 
 type DockerImage struct {
-	ID          string `gorm:"primaryKey;type:uuid"`
-	ImageTag    string `gorm:"unique;not null"`
-	CreatedByID string `gorm:"not null;index;type:uuid"`
-	CreatedBy   User   `gorm:"foreignKey:CreatedByID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID          string    `gorm:"primaryKey;type:uuid" json:"id"`
+	ImageTag    string    `gorm:"unique;not null" json:"image_tag"`
+	Environment string    `gorm:"not null" json:"environment"`
+	CreatedByID string    `gorm:"not null;index;type:uuid" json:"created_by_id"`
+	CreatedBy   User      `gorm:"foreignKey:CreatedByID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"created_by"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 func (*DockerImage) TableName() string {
