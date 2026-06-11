@@ -38,7 +38,7 @@ func (c *DockerImageController) CreateImage(w http.ResponseWriter, r *http.Reque
 		return domain.InvalidRequestError("missing user id", nil)
 	}
 
-	if err := c.service.CreateImage(req.ImageTag, userID.String()); err != nil {
+	if err := c.service.CreateImage(req.ImageTag, req.Environment, userID.String()); err != nil {
 		return err
 	}
 
