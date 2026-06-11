@@ -12,7 +12,7 @@ type CreateLabRequest struct {
 	Difficulty  string   `json:"difficulty" binding:"required"`
 	IsPublic    bool     `json:"isPublic"`
 	Tags        []string `json:"tags"`
-	ContainerID string   `json:"containerID" binding:"required"`
+	ContainerID string   `json:"container_id" binding:"required"`
 }
 
 func (c *CreateLabRequest) Sanitize() {
@@ -79,12 +79,12 @@ type LabResponse struct {
 	Lang        string            `json:"lang"`
 	Difficulty  string            `json:"difficulty"`
 	IsPublic    bool              `json:"is_public"`
-	ContainerID string            `json:"containerID"`
-	CreatedByID string            `json:"createdByID"`
+	ContainerID string            `json:"container_id"`
+	CreatedByID string            `json:"created_by_id"`
 	Tags        []string          `json:"tags"`
 	Chapters    []ChapterResponse `json:"chapters,omitempty"`
-	CreatedAt   time.Time         `json:"createdAt"`
-	UpdatedAt   time.Time         `json:"updatedAt"`
+	CreatedAt   time.Time         `json:"created_at"`
+	UpdatedAt   time.Time         `json:"updated_at"`
 }
 
 // ##
