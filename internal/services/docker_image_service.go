@@ -9,7 +9,7 @@ import (
 
 type DockerImageService interface {
 	// CreateImage creates a new Docker image record in the database.
-	CreateImage(imageTag string, userID string) error
+	CreateImage(imageTag string, environment string, userID string) error
 	ListImages() ([]*model.DockerImage, error)
 }
 
@@ -21,12 +21,17 @@ func NewDockerImageService(repo repository.DockerImageRepository) DockerImageSer
 	return &dockerImageService{repo: repo}
 }
 
-func (s *dockerImageService) CreateImage(imageTag string, userID string) error {
+func (s *dockerImageService) CreateImage(imageTag string, environment string, userID string) error {
 	dockerImage := &model.DockerImage{
 		ImageTag:    imageTag,
+		Environment: environment,
 		CreatedByID: userID,
 	}
-	return postgres_error.MapError(s.repo.Create(context.Background(), dockerImage), "creating Docker image", "docker_image")
+	err := postgres_error.MapError(s.repo.Create(context.Background(), dockerImage), "creating Docker image", "docker_image")
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *dockerImageService) ListImages() ([]*model.DockerImage, error) {
