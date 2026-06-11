@@ -2,68 +2,70 @@ package repository
 
 import (
 	"context"
+	"main/internal/repository/mapper"
+	gormodel "main/internal/repository/model"
+	"main/internal/services/models"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
-
-	"main/internal/enums"
-	"main/internal/repository/model"
 )
 
-type dockerRepository struct {
+type sandboxRepository struct {
 	db *gorm.DB
 }
 
-// SandboxRepository defines persistence methods for sandbox sessions.
 type SandboxRepository interface {
-	Create(ctx context.Context, sandbox *model.Sandbox) error
-	FindByID(ctx context.Context, id uuid.UUID) (*model.Sandbox, error)
-	FindBySessionID(ctx context.Context, sessionID uuid.UUID) (*model.Sandbox, error)
-	ListByUserID(ctx context.Context, userID string) ([]model.Sandbox, error)
-	UpdateStatus(ctx context.Context, containerID string, status enums.SandboxState) error
-	Delete(ctx context.Context, containerID string) error
+	Create(ctx context.Context, req *models.SandboxSession) (*models.SandboxSession, error)
+	FindActiveSessionByUserAndTemplate(ctx context.Context, userID string, templateID string) (*models.SandboxSession, error)
+	Delete(ctx context.Context, id string) error
+	UpdateStatus(ctx context.Context, id string, status string) error
 }
 
-// NewSandboxRepository returns a GORM-backed SandboxRepository.
 func NewSandboxRepository(db *gorm.DB) SandboxRepository {
-	return &dockerRepository{db: db}
+	return &sandboxRepository{db: db}
 }
 
-func (r *dockerRepository) Create(ctx context.Context, sandbox *model.Sandbox) error {
-	return r.db.WithContext(ctx).Model(&model.Sandbox{}).Omit("Image").Create(sandbox).Error
+func (s *sandboxRepository) Create(ctx context.Context, req *models.SandboxSession) (*models.SandboxSession, error) {
+	newsession := mapper.SessionToGorm(req)
+	if err := s.db.WithContext(ctx).Model(&gormodel.SandboxSession{}).Create(newsession).Error; err != nil {
+		return nil, err
+	}
+	return mapper.SessionFromGorm(newsession), nil
 }
 
-func (r *dockerRepository) FindByID(ctx context.Context, id uuid.UUID) (*model.Sandbox, error) {
-	var sandbox model.Sandbox
-	err := r.db.WithContext(ctx).First(&sandbox, "id = ?", id).Error
+func (s *sandboxRepository) Delete(ctx context.Context, id string) error {
+	if err := s.db.WithContext(ctx).Where("id = ?", id).Delete(&gormodel.SandboxSession{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *sandboxRepository) FindActiveSessionByUserAndTemplate(
+	ctx context.Context,
+	userID string,
+	templateID string,
+) (*models.SandboxSession, error) {
+
+	var session gormodel.SandboxSession
+
+	err := s.db.WithContext(ctx).
+		Where(
+			"user_id = ? AND template_id = ? AND status = ? AND expires_at > NOW()",
+			userID,
+			templateID,
+			"active",
+		).
+		First(&session).Error
+
 	if err != nil {
 		return nil, err
 	}
-	return &sandbox, nil
+
+	return mapper.SessionFromGorm(&session), nil
 }
 
-func (r *dockerRepository) FindBySessionID(ctx context.Context, sessionID uuid.UUID) (*model.Sandbox, error) {
-	var sandbox model.Sandbox
-	err := r.db.WithContext(ctx).First(&sandbox, "session_id = ?", sessionID).Error
-	if err != nil {
-		return nil, err
+func (s *sandboxRepository) UpdateStatus(ctx context.Context, id string, status string) error {
+	if err := s.db.WithContext(ctx).Model(&gormodel.SandboxSession{}).Where("id = ?", id).Update("status", status).Error; err != nil {
+		return err
 	}
-	return &sandbox, nil
-}
-
-func (r *dockerRepository) ListByUserID(ctx context.Context, userID string) ([]model.Sandbox, error) {
-	var sandboxes []model.Sandbox
-	err := r.db.WithContext(ctx).Where("user_id = ?", userID).Order("created_at desc").Find(&sandboxes).Error
-	if err != nil {
-		return nil, err
-	}
-	return sandboxes, nil
-}
-
-func (r *dockerRepository) UpdateStatus(ctx context.Context, containerID string, status enums.SandboxState) error {
-	return r.db.WithContext(ctx).Model(&model.Sandbox{}).Where("container_id = ?", containerID).Update("status", status).Error
-}
-
-func (r *dockerRepository) Delete(ctx context.Context, containerID string) error {
-	return r.db.WithContext(ctx).Delete(&model.Sandbox{}, "container_id = ?", containerID).Error
+	return nil
 }
