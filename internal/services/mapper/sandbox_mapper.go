@@ -1,58 +1,121 @@
 package mapper
 
 import (
-	"main/internal/repository/model"
-	service_models "main/internal/services/models"
+	"context"
+	"net/http"
+	"time"
+
+	request_context "main/internal/context"
+	"main/internal/dto"
+	"main/internal/services/models"
 )
 
-// ToRepoModel maps a service Sandbox model to a persistence repo Sandbox model.
-func ToRepoModel(s *service_models.Sandbox) *model.Sandbox {
-	if s == nil {
-		return nil
+// SandboxCreateRequestToServiceModel maps an API create request to a service model.
+func ToSandboxTemplate(req dto.CreateTemplateReq, ctx context.Context, now time.Time) (*models.SandboxTemplate, error) {
+	userID, ok := request_context.UserID(ctx)
+	if !ok {
+		return nil, http.ErrNoCookie
 	}
-	return &model.Sandbox{
-		ID:             s.ID,
-		UserID:         s.UserID,
-		Environment:    s.Environment,
-		MemoryLimit:    s.MemoryLimit,
-		CPULimit:       s.CPULimit,
-		PidsLimit:      s.PidsLimit,
-		SessionTimeout: s.SessionTimeout,
-		ExecTimeout:    s.ExecTimeout,
-		NetworkMode:    s.NetworkMode,
-		ContainerName:  s.ContainerName,
-		ContainerID:    s.ContainerID,
-		SessionID:      s.SessionID,
-		Status:         s.Status,
-		ExpiresAt:      s.ExpiresAt,
-		CreatedAt:      s.CreatedAt,
-		UpdatedAt:      s.UpdatedAt,
-		// Note: Image mapping can be added here if needed recursively.
-		// You may just pass ImageID depending on how the repository handles it.
+	return &models.SandboxTemplate{
+		UserID:         userID.String(),
+		Lang:           req.Lang,
+		MemoryLimit:    req.MemoryLimit,
+		CPULimit:       req.CPULimit,
+		PidsLimit:      req.PidsLimit,
+		SessionTimeout: req.SessionTimeout,
+		ExecTimeout:    req.ExecTimeout,
+		NetworkMode:    req.NetworkMode,
+	}, nil
+}
+
+func ToSandboxTemplateResponse(sandbox *models.SandboxTemplate) *dto.SandboxTemplateResponse {
+	if sandbox == nil {
+		return &dto.SandboxTemplateResponse{}
+	}
+
+	return &dto.SandboxTemplateResponse{
+		ID:             sandbox.ID,
+		UserID:         sandbox.UserID,
+		ImageTag:       sandbox.Image.ImageTag,
+		Lang:           sandbox.Lang,
+		MemoryLimit:    sandbox.MemoryLimit,
+		CPULimit:       sandbox.CPULimit,
+		PidsLimit:      sandbox.PidsLimit,
+		SessionTimeout: sandbox.SessionTimeout,
+		ExecTimeout:    sandbox.ExecTimeout,
+		NetworkMode:    sandbox.NetworkMode,
 	}
 }
 
-// ToServiceModel maps a persistence repo Sandbox model to a service Sandbox model.
-func ToServiceModel(r *model.Sandbox) *service_models.Sandbox {
-	if r == nil {
-		return nil
+func ToSandboxTemplateResponseList(sandboxes []models.SandboxTemplate) []*dto.SandboxTemplateResponse {
+	responses := make([]*dto.SandboxTemplateResponse, len(sandboxes))
+	for i, sb := range sandboxes {
+		responses[i] = ToSandboxTemplateResponse(&sb)
 	}
-	return &service_models.Sandbox{
-		ID:             r.ID,
-		UserID:         r.UserID,
-		Environment:    r.Environment,
-		MemoryLimit:    r.MemoryLimit,
-		CPULimit:       r.CPULimit,
-		PidsLimit:      r.PidsLimit,
-		SessionTimeout: r.SessionTimeout,
-		ExecTimeout:    r.ExecTimeout,
-		NetworkMode:    r.NetworkMode,
-		ContainerName:  r.ContainerName,
-		ContainerID:    r.ContainerID,
-		SessionID:      r.SessionID,
-		Status:         r.Status,
-		ExpiresAt:      r.ExpiresAt,
-		CreatedAt:      r.CreatedAt,
-		UpdatedAt:      r.UpdatedAt,
+	return responses
+}
+
+func ToSessionRequest(ctx context.Context, templateID string) (*models.SandboxSession, error) {
+	userID, ok := request_context.UserID(ctx)
+	if !ok {
+		return nil, http.ErrNoCookie
+	}
+	return &models.SandboxSession{
+		UserID:     userID.String(),
+		TemplateID: templateID,
+	}, nil
+}
+func ToSessionResponse(session *models.SandboxSession) *dto.SandboxSessionResponse {
+	if session == nil {
+		return &dto.SandboxSessionResponse{}
+	}
+
+	return &dto.SandboxSessionResponse{
+		SessionID:  session.ID,
+		TemplateID: session.TemplateID,
+		Status:     session.Status,
+		CreatedAt:  session.CreatedAt,
+		ExpiresAt:  session.ExpiresAt,
 	}
 }
+
+func ToSandboxExecutionModel(ctx context.Context, req *dto.SandboxExecReq) (*models.SandboxExecution, error) {
+
+	userID, ok := request_context.UserID(ctx)
+	if !ok {
+		return nil, http.ErrNoCookie
+	}
+	return &models.SandboxExecution{
+		UserID:    userID.String(),
+		SessionID: req.SessionID,
+		Command:   req.Command,
+	}, nil
+}
+func ToSandboxExecutionResponse(exec *models.SandboxExecution) *dto.SandboxExecResponse {
+	if exec == nil {
+		return &dto.SandboxExecResponse{}
+	}
+
+	return &dto.SandboxExecResponse{
+		Stdout:   exec.Stdout,
+		Stderr:   exec.Stderr,
+		ExitCode: exec.ExitCode,
+		ExecTime: exec.ExecTime,
+	}
+}
+
+// // SandboxServiceModelToCreateResponse maps a service sandbox model to the create response payload.
+// func SandboxServiceModelToCreateResponse(sandbox *models.SandboxTemplate) dto.CreateResponse {
+// 	if sandbox == nil {
+// 		return dto.CreateResponse{}
+// 	}
+
+// 	return dto.CreateResponse{
+// 		ContainerID: sandbox.ContainerID,
+// 		SessionID:   sandbox.SessionID,
+// 		Status:      sandbox.Status,
+// 		CreatedAt:   sandbox.CreatedAt,
+// 		ExpiresAt:   sandbox.ExpiresAt,
+// 		Error:       nil,
+// 	}
+// }
