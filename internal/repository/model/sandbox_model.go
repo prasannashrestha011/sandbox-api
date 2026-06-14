@@ -2,6 +2,9 @@ package model
 
 import (
 	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type SandboxSession struct {
@@ -28,4 +31,12 @@ type SandboxSession struct {
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+func (s *SandboxSession) BeforeCreate(tx *gorm.DB) (err error) {
+	if s.ID == "" {
+		s.ID = uuid.New().String()
+	}
+
+	return nil
 }
