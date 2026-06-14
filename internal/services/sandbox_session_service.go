@@ -2,14 +2,19 @@ package services
 
 import (
 	"context"
+	"log"
 	"main/internal/domain"
 	"main/internal/dto"
 	"main/internal/enums"
 	postgres_error "main/internal/infra/postgres"
+	"main/internal/jobs"
 	"main/internal/repository"
 	"main/internal/sandbox/core"
 	"main/internal/sandbox/lang"
 	"main/internal/services/mapper"
+	"time"
+
+	"github.com/hibiken/asynq"
 )
 
 type SandboxSessionService interface {
@@ -26,11 +31,12 @@ type SandboxSessionService interface {
 type sandboxSessionService struct {
 	repo          repository.SandboxRepository
 	template_repo repository.SandboxTemplateRepository
-	client        core.SandboxClient
+	dockerclient  core.SandboxClient
+	asynqclient   *asynq.Client
 }
 
-func NewSandboxSessionService(repo repository.SandboxRepository, client core.SandboxClient) SandboxSessionService {
-	return &sandboxSessionService{repo: repo, client: client}
+func NewSandboxSessionService(repo repository.SandboxRepository, templateRepo repository.SandboxTemplateRepository, dockerclient core.SandboxClient, asynqclient *asynq.Client) SandboxSessionService {
+	return &sandboxSessionService{repo: repo, template_repo: templateRepo, dockerclient: dockerclient, asynqclient: asynqclient}
 }
 
 func (s *sandboxSessionService) CreateSession(ctx context.Context, templateID string) (*dto.SandboxSessionResponse, error) {
@@ -47,7 +53,8 @@ func (s *sandboxSessionService) CreateSession(ctx context.Context, templateID st
 	if err != nil {
 		return nil, err
 	}
-	containerID, containerName, err := s.client.Create(ctx, template)
+	log.Printf("Creating sandbox session for user %s with template %s", session.UserID, template.Image.ImageTag)
+	containerID, containerName, err := s.dockerclient.Create(ctx, template)
 	if err != nil {
 		return nil, err
 	}
@@ -57,6 +64,22 @@ func (s *sandboxSessionService) CreateSession(ctx context.Context, templateID st
 	session.Lang = template.Lang
 	session.ContainerID = containerID
 	session.ContainerName = containerName
+	session.Status = enums.StateActive
+
+	payload := &dto.SandboxCleanupPayload{
+		ContainerID: containerID,
+		SessionID:   session.ID,
+	}
+
+	task, err := jobs.NewSandboxCleanupTask(payload)
+	if err != nil {
+		log.Printf("Error creating sandbox cleanup task for session %s: %v", session.ID, err)
+		return nil, err
+	}
+	if _, err = s.asynqclient.Enqueue(task, asynq.ProcessIn(30*time.Second)); err != nil {
+		log.Printf("Error enqueuing sandbox cleanup task for session %s: %v", session.ID, err)
+		return nil, err
+	}
 
 	createdSession, err := s.repo.Create(ctx, session)
 	if err != nil {
@@ -89,7 +112,7 @@ func (s *sandboxSessionService) ExecuteCommand(ctx context.Context, req *dto.San
 	if err != nil {
 		return nil, err
 	}
-	resp, err := s.client.ExecuteCode(ctx, session.ContainerID, cmd)
+	resp, err := s.dockerclient.ExecuteCode(ctx, session.ContainerID, cmd)
 	if err != nil {
 		return nil, err
 	}
