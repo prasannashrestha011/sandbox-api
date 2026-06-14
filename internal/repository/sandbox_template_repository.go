@@ -35,7 +35,7 @@ func (r *sandboxTemplateRepository) Create(ctx context.Context, req *models.Sand
 
 func (r *sandboxTemplateRepository) FindByID(ctx context.Context, id string) (*models.SandboxTemplate, error) {
 	var sandbox gormodel.SandboxTemplate
-	err := r.db.WithContext(ctx).First(&sandbox, "id = ?", id).Error
+	err := r.db.WithContext(ctx).Preload("Image").First(&sandbox, "id = ?", id).Error
 	if err != nil {
 		return nil, err
 	}
