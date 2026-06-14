@@ -205,3 +205,8 @@ type SubmissionResponse struct {
 	AttemptNo   int       `json:"attemptNo"`
 	SubmittedAt time.Time `json:"submittedAt"`
 }
+
+type SandboxCleanupPayload struct {
+	SessionID   string `json:"sessionId"`
+	ContainerID string `json:"containerId"`
+}
