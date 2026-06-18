@@ -3,7 +3,6 @@ module main
 go 1.24.0
 
 require (
-	github.com/docker/docker v28.5.2+incompatible
 	github.com/go-chi/cors v1.2.2
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
