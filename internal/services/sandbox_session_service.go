@@ -7,7 +7,6 @@ import (
 	"main/internal/dto"
 	"main/internal/enums"
 	postgres_error "main/internal/infra/postgres"
-	"main/internal/jobs"
 	"main/internal/repository"
 	"main/internal/sandbox/core"
 	"main/internal/sandbox/lang"
@@ -23,6 +22,9 @@ type SandboxSessionService interface {
 
 	// GetActiveSession retrieves the active sandbox session for a given user and template.
 	GetActiveSession(ctx context.Context, userID string, templateID string) (*dto.SandboxSessionResponse, error)
+
+	// ExecuteCommand executes a command within an active sandbox session and returns the result.
+	ExecuteCommand(ctx context.Context, sessionID string, req *dto.SandboxExecReq) (*dto.SandboxExecResponse, error)
 
 	// TerminateSession terminates an active sandbox session by its ID.
 	TerminateSession(ctx context.Context, sessionID string) error
@@ -44,7 +46,7 @@ func (s *sandboxSessionService) CreateSession(ctx context.Context, templateID st
 	if err != nil {
 		return nil, err
 	}
-	activeSession, err := s.repo.FindActiveSessionByUserAndTemplate(ctx, session.UserID, session.TemplateID)
+	activeSession, err := s.repo.FindActiveSessionByUser(ctx, session.UserID, session.TemplateID)
 	if err == nil && activeSession != nil {
 		return mapper.ToSessionResponse(activeSession), nil
 	}
@@ -65,21 +67,23 @@ func (s *sandboxSessionService) CreateSession(ctx context.Context, templateID st
 	session.ContainerID = containerID
 	session.ContainerName = containerName
 	session.Status = enums.StateActive
+	session.ExpiresAt = time.Now().Add(template.SessionTimeout * 3600 * time.Second)
 
-	payload := &dto.SandboxCleanupPayload{
-		ContainerID: containerID,
-		SessionID:   session.ID,
-	}
+	// payload := &dto.SandboxCleanupPayload{
+	// 	ContainerID: containerID,
+	// 	SessionID:   session.ID,
+	// }
 
-	task, err := jobs.NewSandboxCleanupTask(payload)
-	if err != nil {
-		log.Printf("Error creating sandbox cleanup task for session %s: %v", session.ID, err)
-		return nil, err
-	}
-	if _, err = s.asynqclient.Enqueue(task, asynq.ProcessIn(30*time.Second)); err != nil {
-		log.Printf("Error enqueuing sandbox cleanup task for session %s: %v", session.ID, err)
-		return nil, err
-	}
+	// task, err := jobs.NewSandboxCleanupTask(payload)
+	// if err != nil {
+	// 	log.Printf("Error creating sandbox cleanup task for session %s: %v", session.ID, err)
+	// 	return nil, err
+	// }
+	// if _, err = s.asynqclient.Enqueue(task, asynq.ProcessIn(30*time.Second)); err != nil {
+	// 	log.Printf("Error enqueuing sandbox cleanup task for session %s: %v", session.ID, err)
+	// 	return nil, err
+
+	// }
 
 	createdSession, err := s.repo.Create(ctx, session)
 	if err != nil {
@@ -88,21 +92,21 @@ func (s *sandboxSessionService) CreateSession(ctx context.Context, templateID st
 	return mapper.ToSessionResponse(createdSession), nil
 }
 func (s *sandboxSessionService) GetActiveSession(ctx context.Context, userID string, templateID string) (*dto.SandboxSessionResponse, error) {
-	session, err := s.repo.FindActiveSessionByUserAndTemplate(ctx, userID, templateID)
+	session, err := s.repo.FindActiveSessionByUser(ctx, userID, templateID)
 	if err != nil {
 		return nil, err
 	}
 	return mapper.ToSessionResponse(session), nil
 }
-func (s *sandboxSessionService) ExecuteCommand(ctx context.Context, req *dto.SandboxExecReq) (*dto.SandboxExecResponse, error) {
-	execModel, err := mapper.ToSandboxExecutionModel(ctx, req)
+func (s *sandboxSessionService) ExecuteCommand(ctx context.Context, sessionID string, req *dto.SandboxExecReq) (*dto.SandboxExecResponse, error) {
+	execModel, err := mapper.ToSandboxExecutionModel(ctx, sessionID, req)
 	if err != nil {
 		return nil, err
 	}
-	session, err := s.repo.FindActiveSessionByUserAndTemplate(ctx, execModel.UserID, execModel.SessionID)
-
+	session, err := s.repo.FindActiveSessionByUser(ctx, execModel.UserID, sessionID)
 	if err != nil {
 		return nil, err
+
 	}
 	if session.Status != enums.StateActive {
 		return nil, domain.InvalidRequestError("lab session expired", nil)

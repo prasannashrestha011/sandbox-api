@@ -5,9 +5,12 @@ import (
 	"log"
 	"main/internal/domain"
 	"main/internal/dto"
+	"main/internal/pkg"
 	"main/internal/response"
 	"main/internal/services"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 type SandboxSessionHandler struct {
@@ -34,4 +37,22 @@ func (h *SandboxSessionHandler) CreateSession(w http.ResponseWriter, r *http.Req
 	response.WriteJSON(w, r, http.StatusOK, "create new session", resp, nil)
 	return nil
 
+}
+
+func (h *SandboxSessionHandler) ExecuteCode(w http.ResponseWriter, r *http.Request) error {
+	sessionID := pkg.ExtractParam(r, "id")
+	if _, err := uuid.Parse(sessionID); err != nil {
+		return domain.InvalidRequestError("invalid session ID", nil)
+	}
+	var req dto.SandboxExecReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return domain.InvalidRequestError("invalid request body", nil)
+	}
+	resp, err := h.sandboxSessionService.ExecuteCommand(r.Context(), sessionID, &req)
+	if err != nil {
+		return err
+	}
+	log.Printf("Code executed successfully in session ID: %s", sessionID)
+	response.WriteJSON(w, r, http.StatusOK, "code execution result", resp, nil)
+	return nil
 }
