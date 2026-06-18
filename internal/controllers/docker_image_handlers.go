@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
-	request_context "main/internal/context"
 	"main/internal/domain"
 	"main/internal/dto"
 	"main/internal/response"
@@ -33,12 +32,7 @@ func (c *DockerImageController) CreateImage(w http.ResponseWriter, r *http.Reque
 
 	}
 
-	userID, ok := request_context.UserID(r.Context())
-	if !ok {
-		return domain.InvalidRequestError("missing user id", nil)
-	}
-
-	if err := c.service.CreateImage(req.ImageTag, userID.String()); err != nil {
+	if err := c.service.CreateImage(r.Context(), &req); err != nil {
 		return err
 	}
 
@@ -46,7 +40,7 @@ func (c *DockerImageController) CreateImage(w http.ResponseWriter, r *http.Reque
 	return nil
 }
 func (c *DockerImageController) ListImages(w http.ResponseWriter, r *http.Request) error {
-	images, err := c.service.ListImages()
+	images, err := c.service.ListImages(r.Context())
 	if err != nil {
 		return err
 	}
