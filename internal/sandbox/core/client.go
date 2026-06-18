@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"main/internal/dto"
@@ -17,6 +18,7 @@ import (
 // SandboxClient defines sandbox lifecycle operations.
 type SandboxClient interface {
 	Create(ctx context.Context, req *models.SandboxTemplate) (containerID string, containerName string, err error)
+	PullImage(ctx context.Context, imageTag string) error
 	ExecuteCode(ctx context.Context, containerID string, cmd []string) (*dto.SandboxExecResponse, error)
 	CleanUp(ctx context.Context, handler func(containerID []string)) error
 	ListenContainerEvents(ctx context.Context, handler func(containerID string)) error
@@ -43,11 +45,6 @@ func (c *dockerSandboxClient) Create(ctx context.Context, req *models.SandboxTem
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, req.SessionTimeout)
 	defer cancel()
 
-	log.Println("Image tag: ", req.Image.ImageTag)
-	err = image.PullImage(ctxWithTimeout, c.apiClient, req.Image.ImageTag)
-	if err != nil {
-		return "", "", err
-	}
 	containerID, containerName, err = container.CreateContainer(ctxWithTimeout, c.apiClient, req)
 	if err != nil {
 		return "", "", err
@@ -58,6 +55,15 @@ func (c *dockerSandboxClient) Create(ctx context.Context, req *models.SandboxTem
 		return "", "", err
 	}
 	return containerID, containerName, nil
+}
+func (c *dockerSandboxClient) PullImage(ctx context.Context, imageTag string) error {
+	// 1. Pull the image
+	err := image.PullImage(ctx, c.apiClient, imageTag)
+	if err != nil {
+		return fmt.Errorf("failed to pull image %s: %w", imageTag, err)
+	}
+
+	return nil
 }
 func (c *dockerSandboxClient) ExecuteCode(ctx context.Context, containerID string, cmd []string) (*dto.SandboxExecResponse, error) {
 	return sb_executil.ExecCreate(ctx, c.apiClient, containerID, cmd)
@@ -91,16 +97,16 @@ func (c *dockerSandboxClient) CleanUp(ctx context.Context, handler func(containe
 	}
 	log.Printf("CleanUp: found %d total containers", len(result.Items))
 	// Remove images that are no longer in use
-	for imageID := range imageIDs {
-		log.Printf("CleanUp: removing image %s", imageID)
-		_, err := c.apiClient.ImageRemove(ctx, imageID, client.ImageRemoveOptions{
-			Force: true,
-		})
-		if err != nil {
-			log.Printf("Clean up func: %v", err.Error())
-			return err
-		}
-	}
+	// for imageID := range imageIDs {
+	// 	log.Printf("CleanUp: removing image %s", imageID)
+	// 	_, err := c.apiClient.ImageRemove(ctx, imageID, client.ImageRemoveOptions{
+	// 		Force: true,
+	// 	})
+	// 	if err != nil {
+	// 		log.Printf("Clean up func: %v", err.Error())
+	// 		return err
+	// 	}
+	// }
 	handler(containerIDs)
 	return nil
 }
