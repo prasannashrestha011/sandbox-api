@@ -63,7 +63,7 @@ func (s *sandboxSessionService) CreateSession(ctx context.Context, templateID st
 
 	session.SessionTimeout = template.SessionTimeout
 	session.ExecTimeout = template.ExecTimeout
-	session.Lang = template.Lang
+	session.Runtime = template.Runtime
 	session.ContainerID = containerID
 	session.ContainerName = containerName
 	session.Status = enums.StateActive
@@ -112,7 +112,7 @@ func (s *sandboxSessionService) ExecuteCommand(ctx context.Context, sessionID st
 		return nil, domain.InvalidRequestError("lab session expired", nil)
 	}
 
-	cmd, err := lang.BuildCommand(session.Lang, execModel.Command)
+	cmd, err := lang.BuildCommand(session.Runtime, execModel.Command)
 	if err != nil {
 		return nil, err
 	}

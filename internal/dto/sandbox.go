@@ -12,7 +12,7 @@ import (
 type CreateTemplateReq struct {
 	// UserID string `json:"user_id,omitempty"`
 	// Language Environment
-	Lang string `json:"lang,omitempty"`
+	Runtime string `json:"runtime,omitempty"`
 	// Docker Image ID
 	ImageID string `json:"image_id,omitempty"`
 
@@ -44,7 +44,7 @@ type UpdateRequest struct {
 // -- resource limit for sandbox --
 
 func (r *CreateTemplateReq) Sanitize() {
-	r.Lang = strings.TrimSpace(r.Lang)
+	r.Runtime = strings.TrimSpace(r.Runtime)
 	r.ImageID = strings.TrimSpace(r.ImageID)
 	r.NetworkMode = strings.TrimSpace(r.NetworkMode)
 }
@@ -53,10 +53,10 @@ func (r *CreateTemplateReq) Validate() error {
 	r.Sanitize()
 	var v ValidationErrors
 
-	if r.Lang == "" && r.ImageID == "" {
+	if r.Runtime == "" && r.ImageID == "" {
 		v.Violations = append(v.Violations, FieldViolation{
-			Field:   "environment",
-			Message: "either environment or image_id is required",
+			Field:   "runtime",
+			Message: "either runtime or image_id is required",
 		})
 	}
 
@@ -91,42 +91,9 @@ type UpdateStatusRequest struct {
 	Status enums.SandboxState `json:"status"`
 }
 
-type CreateImageRequest struct {
-	// Docker Image ID
-	ImageTag string `json:"image_tag,omitempty"`
-	Lang     string `json:"environment,omitempty"`
-}
-
-func (r *CreateImageRequest) Sanitize() {
-	r.ImageTag = strings.TrimSpace(r.ImageTag)
-}
-
-func (r *CreateImageRequest) Validate() error {
-	r.Sanitize()
-	var v ValidationErrors
-
-	if r.ImageTag == "" {
-		v.Violations = append(v.Violations, FieldViolation{
-			Field:   "image_tag",
-			Message: "image_tag is required",
-		})
-	} else if !strings.Contains(r.ImageTag, ":") {
-		// Assuming the required format is image:tag like ubuntu:general
-		v.Violations = append(v.Violations, FieldViolation{
-			Field:   "image_tag",
-			Message: "image_tag must be in a valid format containing a tag (e.g., name:general)",
-		})
-	}
-
-	if len(v.Violations) > 0 {
-		return &v
-	}
-	return nil
-}
-
 type ExecuteCodeRequest struct {
-	Lang string `json:"lang"`
-	Code string `json:"code"`
+	Runtime string `json:"runtime"`
+	Code    string `json:"code"`
 }
 
 func (r *ExecuteCodeRequest) Sanitize() {
@@ -143,10 +110,10 @@ func (r *ExecuteCodeRequest) Validate() error {
 			Message: "code is required",
 		})
 	}
-	if r.Lang == "" {
+	if r.Runtime == "" {
 		v.Violations = append(v.Violations, FieldViolation{
-			Field:   "lang",
-			Message: "lang is required",
+			Field:   "runtime",
+			Message: "runtime is required",
 		})
 	}
 
@@ -177,7 +144,7 @@ type SandboxTemplateResponse struct {
 	ID             string        `json:"id"`
 	UserID         string        `json:"user_id"`
 	ImageTag       string        `json:"image_tag,omitempty"`
-	Lang           string        `json:"lang,omitempty"`
+	Runtime        string        `json:"runtime,omitempty"`
 	MemoryLimit    int64         `json:"memory_limit,omitempty"`
 	CPULimit       int64         `json:"cpu_limit,omitempty"`
 	PidsLimit      int64         `json:"pids_limit,omitempty"`

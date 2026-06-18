@@ -9,7 +9,7 @@ import (
 type SandboxTemplate struct {
 	ID             string
 	UserID         string
-	Lang           string
+	Runtime        string
 	Image          DockerImage
 	MemoryLimit    int64
 	CPULimit       int64
@@ -26,8 +26,8 @@ type SandboxSession struct {
 	ContainerID   string
 	ContainerName string
 
-	Lang   string
-	Status enums.SandboxState
+	Runtime string
+	Status  enums.SandboxState
 
 	SessionTimeout time.Duration
 	ExecTimeout    time.Duration

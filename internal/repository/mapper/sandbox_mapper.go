@@ -8,9 +8,9 @@ import (
 
 func TemplateToGorm(t *models.SandboxTemplate) *gormodel.SandboxTemplate {
 	return &gormodel.SandboxTemplate{
-		ID:     t.ID,
-		UserID: t.UserID,
-		Lang:   t.Lang,
+		ID:      t.ID,
+		UserID:  t.UserID,
+		Runtime: t.Runtime,
 
 		ImageID:     t.Image.ID,
 		MemoryLimit: t.MemoryLimit,
@@ -24,9 +24,9 @@ func TemplateToGorm(t *models.SandboxTemplate) *gormodel.SandboxTemplate {
 }
 func TemplateFromGorm(m *gormodel.SandboxTemplate) *models.SandboxTemplate {
 	return &models.SandboxTemplate{
-		ID:     m.ID,
-		UserID: m.UserID,
-		Lang:   m.Lang,
+		ID:      m.ID,
+		UserID:  m.UserID,
+		Runtime: m.Runtime,
 
 		Image: models.DockerImage{
 			ID:       m.Image.ID,
@@ -60,7 +60,7 @@ func SessionToGorm(s *models.SandboxSession) *gormodel.SandboxSession {
 		ContainerName: s.ContainerName,
 		Status:        string(s.Status),
 		ExpiresAt:     s.ExpiresAt,
-		Lang:          s.Lang,
+		Runtime:       s.Runtime,
 	}
 }
 
@@ -75,6 +75,6 @@ func SessionFromGorm(m *gormodel.SandboxSession) *models.SandboxSession {
 		ExpiresAt:     m.ExpiresAt,
 		CreatedAt:     m.CreatedAt,
 		UpdatedAt:     m.UpdatedAt,
-		Lang:          m.Lang,
+		Runtime:       m.Runtime,
 	}
 }

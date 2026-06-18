@@ -18,7 +18,7 @@ func ToSandboxTemplate(req dto.CreateTemplateReq, ctx context.Context, now time.
 	}
 	return &models.SandboxTemplate{
 		UserID:         userID.String(),
-		Lang:           req.Lang,
+		Runtime:        req.Runtime,
 		MemoryLimit:    req.MemoryLimit,
 		CPULimit:       req.CPULimit,
 		PidsLimit:      req.PidsLimit,
@@ -36,9 +36,8 @@ func ToSandboxTemplateResponse(sandbox *models.SandboxTemplate) *dto.SandboxTemp
 	return &dto.SandboxTemplateResponse{
 		ID:             sandbox.ID,
 		UserID:         sandbox.UserID,
-		ImageTag:       sandbox.Image.ImageTag,
-		Lang:           sandbox.Lang,
 		MemoryLimit:    sandbox.MemoryLimit,
+		Runtime:        sandbox.Runtime,
 		CPULimit:       sandbox.CPULimit,
 		PidsLimit:      sandbox.PidsLimit,
 		SessionTimeout: sandbox.SessionTimeout,

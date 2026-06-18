@@ -16,7 +16,7 @@ type SandboxSession struct {
 	// link to template
 	TemplateID string `gorm:"not null;index"`
 
-	Lang string `gorm:"not null"`
+	Runtime string `gorm:"not null"`
 	// runtime container info
 	ContainerID   string
 	ContainerName string
