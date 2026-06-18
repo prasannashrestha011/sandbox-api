@@ -93,8 +93,8 @@ type UpdateStatusRequest struct {
 
 type CreateImageRequest struct {
 	// Docker Image ID
-	ImageTag    string `json:"image_tag,omitempty"`
-	Environment string `json:"environment,omitempty"`
+	ImageTag string `json:"image_tag,omitempty"`
+	Lang     string `json:"environment,omitempty"`
 }
 
 func (r *CreateImageRequest) Sanitize() {
@@ -227,8 +227,7 @@ type SandboxSessionResponse struct {
 }
 
 type SandboxExecReq struct {
-	SessionID string `json:"session_id,omitempty"`
-	Command   string `json:"command,omitempty"`
+	Command string `json:"command,omitempty"`
 }
 
 type SandboxExecResponse struct {

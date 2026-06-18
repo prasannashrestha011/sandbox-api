@@ -15,7 +15,7 @@ type sandboxRepository struct {
 
 type SandboxRepository interface {
 	Create(ctx context.Context, req *models.SandboxSession) (*models.SandboxSession, error)
-	FindActiveSessionByUserAndTemplate(ctx context.Context, userID string, templateID string) (*models.SandboxSession, error)
+	FindActiveSessionByUser(ctx context.Context, userID string, templateID string) (*models.SandboxSession, error)
 	Delete(ctx context.Context, id string) error
 	UpdateStatus(ctx context.Context, id string, status string) error
 }
@@ -39,7 +39,7 @@ func (s *sandboxRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (s *sandboxRepository) FindActiveSessionByUserAndTemplate(
+func (s *sandboxRepository) FindActiveSessionByUser(
 	ctx context.Context,
 	userID string,
 	templateID string,
@@ -49,7 +49,7 @@ func (s *sandboxRepository) FindActiveSessionByUserAndTemplate(
 
 	err := s.db.WithContext(ctx).
 		Where(
-			"user_id = ? AND template_id = ? AND status = ? AND expires_at > NOW()",
+			"user_id = ? AND id = ? AND status = ? AND expires_at > NOW()",
 			userID,
 			templateID,
 			"active",
