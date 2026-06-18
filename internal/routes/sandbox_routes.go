@@ -9,7 +9,7 @@ import (
 )
 
 // RegisterSandboxRoutes wires sandbox endpoints into the router.
-func RegisterSandboxRoutes(r chi.Router, template *controllers.SandboxController, sesssion *controllers.SandboxSessionHandler) {
+func RegisterSandboxRoutes(r chi.Router, template *controllers.SandboxController, session *controllers.SandboxSessionHandler) {
 	r.Route("/sandbox-template", func(sr chi.Router) {
 		sr.Use(proxy.AuthMiddleware)
 		response.WrapPost(sr, "/", template.CreateSandbox)
@@ -19,6 +19,7 @@ func RegisterSandboxRoutes(r chi.Router, template *controllers.SandboxController
 	})
 	r.Route("/sandbox/session", func(r chi.Router) {
 		r.Use(proxy.AuthMiddleware)
-		response.WrapPost(r, "/", sesssion.CreateSession)
+		response.WrapPost(r, "/", session.CreateSession)
+		response.WrapPost(r, "/{id}/execute", session.ExecuteCode)
 	})
 }
