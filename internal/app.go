@@ -105,7 +105,7 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		SandboxService:         services.NewSandboxTemplateService(repos.SandboxRepo, repos.DockerImageRepo, sandboxClient),
 		UserService:            services.NewUserService(repos.UserRepo),
 		AuthService:            services.NewAuthService(repos.UserRepo, repos.RefreshRepo),
-		DockerImageService:     services.NewDockerImageService(repos.DockerImageRepo),
+		DockerImageService:     services.NewDockerImageService(repos.DockerImageRepo, sandboxClient),
 		LabService:             lab_services.NewLabService(repos.LabRepo),
 		ChapterService:         lab_services.NewChapterService(repos.ChapterRepo),
 		ExerciseService:        lab_services.NewExerciseService(repos.ExerciseRepo),
