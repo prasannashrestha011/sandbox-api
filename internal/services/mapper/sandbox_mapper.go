@@ -79,16 +79,15 @@ func ToSessionResponse(session *models.SandboxSession) *dto.SandboxSessionRespon
 	}
 }
 
-func ToSandboxExecutionModel(ctx context.Context, req *dto.SandboxExecReq) (*models.SandboxExecution, error) {
+func ToSandboxExecutionModel(ctx context.Context, sessionID string, req *dto.SandboxExecReq) (*models.SandboxExecution, error) {
 
 	userID, ok := request_context.UserID(ctx)
 	if !ok {
 		return nil, http.ErrNoCookie
 	}
 	return &models.SandboxExecution{
-		UserID:    userID.String(),
-		SessionID: req.SessionID,
-		Command:   req.Command,
+		UserID:  userID.String(),
+		Command: req.Command,
 	}, nil
 }
 func ToSandboxExecutionResponse(exec *models.SandboxExecution) *dto.SandboxExecResponse {

@@ -39,6 +39,8 @@ func (s *sandboxTemplateService) Create(ctx context.Context, imageId string, san
 	}
 	sandbox.Image.ImageTag = image.ImageTag
 	sandbox.Image.ID = image.ID
+	sandbox.Lang = image.Lang
+	log.Println("Creating sandbox with image: ", image.ImageTag)
 	err = s.repo.Create(ctx, sandbox)
 	if err != nil {
 		log.Println("Sandbox repository: ", err.Error())
