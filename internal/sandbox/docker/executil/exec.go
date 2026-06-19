@@ -13,7 +13,7 @@ import (
 )
 
 func ExecCreate(ctx context.Context, apiClient *client.Client, containerID string, cmd []string) (*dto.SandboxExecResponse, error) {
-	exeCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	exeCtx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
 	execID, err := apiClient.ExecCreate(exeCtx, containerID, client.ExecCreateOptions{
 		AttachStdout: true,
@@ -45,6 +45,7 @@ func ExecCreate(ctx context.Context, apiClient *client.Client, containerID strin
 			return nil, err
 		}
 	case <-exeCtx.Done():
+		resp.Close()
 		inspect, err := apiClient.ExecInspect(context.Background(), execID.ID, client.ExecInspectOptions{})
 		if err == nil && inspect.PID != 0 {
 			killCmd := []string{"kill", "-9", fmt.Sprintf("%d", inspect.PID)}
