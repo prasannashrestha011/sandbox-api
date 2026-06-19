@@ -13,7 +13,7 @@ import (
 
 // SandboxTemplateService exposes business operations for sandbox templates.
 type SandboxTemplateService interface {
-	Create(ctx context.Context, imageId string, sandbox *models.SandboxTemplate) error
+	Create(ctx context.Context, imageId string, sandbox *models.SandboxTemplate) (*models.SandboxTemplate, error)
 	GetByID(ctx context.Context, id string) (*models.SandboxTemplate, error)
 	ListByUserID(ctx context.Context, userID string) ([]models.SandboxTemplate, error)
 	UpdateDetails(ctx context.Context, id string, updates map[string]interface{}) error
@@ -29,24 +29,26 @@ func NewSandboxTemplateService(repo repository.SandboxTemplateRepository, imageR
 	return &sandboxTemplateService{repo: repo, imageRepo: imageRepo}
 }
 
-func (s *sandboxTemplateService) Create(ctx context.Context, imageId string, sandbox *models.SandboxTemplate) error {
+func (s *sandboxTemplateService) Create(ctx context.Context, imageId string, sandbox *models.SandboxTemplate) (*models.SandboxTemplate, error) {
 	// Validate and cap the sandbox resource limits
 	services_validators.ValidateAndCapSandboxLimits(sandbox)
 
 	image, err := s.imageRepo.FindByID(ctx, imageId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	sandbox.Image.ImageTag = image.ImageTag
 	sandbox.Image.ID = image.ID
-	sandbox.Runtime = image.Runtime
+	sandbox.Image.Lang = image.Lang
+	sandbox.Lang = image.Lang
 	log.Println("Creating sandbox with image: ", image.ImageTag)
-	err = s.repo.Create(ctx, sandbox)
+	createdSandbox, err := s.repo.Create(ctx, sandbox)
 	if err != nil {
 		log.Println("Sandbox repository: ", err.Error())
-		return err
+		return nil, err
 	}
-	return nil
+	*sandbox = *createdSandbox
+	return sandbox, nil
 }
 
 func (s *sandboxTemplateService) GetByID(ctx context.Context, id string) (*models.SandboxTemplate, error) {

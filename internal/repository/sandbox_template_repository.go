@@ -16,7 +16,7 @@ type sandboxTemplateRepository struct {
 
 // SandboxTemplateRepository defines persistence methods for sandbox templates.
 type SandboxTemplateRepository interface {
-	Create(ctx context.Context, req *models.SandboxTemplate) error
+	Create(ctx context.Context, req *models.SandboxTemplate) (*models.SandboxTemplate, error)
 	FindByID(ctx context.Context, id string) (*models.SandboxTemplate, error)
 	ListByUserID(ctx context.Context, userID string) ([]models.SandboxTemplate, error)
 	UpdateDetails(ctx context.Context, id string, updates map[string]interface{}) error
@@ -28,9 +28,13 @@ func NewSandboxTemplateRepository(db *gorm.DB) SandboxTemplateRepository {
 	return &sandboxTemplateRepository{db: db}
 }
 
-func (r *sandboxTemplateRepository) Create(ctx context.Context, req *models.SandboxTemplate) error {
+func (r *sandboxTemplateRepository) Create(ctx context.Context, req *models.SandboxTemplate) (*models.SandboxTemplate, error) {
 	sandbox := mapper.TemplateToGorm(req)
-	return r.db.WithContext(ctx).Model(&gormodel.SandboxTemplate{}).Omit("Image").Create(sandbox).Error
+	err := r.db.WithContext(ctx).Model(&gormodel.SandboxTemplate{}).Omit("Image").Create(sandbox).Error
+	if err != nil {
+		return nil, err
+	}
+	return mapper.TemplateFromGorm(sandbox), nil
 }
 
 func (r *sandboxTemplateRepository) FindByID(ctx context.Context, id string) (*models.SandboxTemplate, error) {

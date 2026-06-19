@@ -36,11 +36,11 @@ func (c *SandboxController) CreateSandbox(w http.ResponseWriter, r *http.Request
 		return err
 	}
 
-	if err := c.service.Create(r.Context(), req.ImageID, sandbox); err != nil {
+	template, err := c.service.Create(r.Context(), req.ImageID, sandbox)
+	if err != nil {
 		return err
 	}
-
-	response.WriteJSON(w, r, http.StatusCreated, "sandbox created", nil, nil)
+	response.WriteJSON(w, r, http.StatusCreated, "sandbox created", template, nil)
 	return nil
 }
 
