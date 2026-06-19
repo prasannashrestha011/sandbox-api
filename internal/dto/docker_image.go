@@ -5,12 +5,12 @@ import "strings"
 type CreateImageRequest struct {
 	// Docker Image ID
 	ImageTag string `json:"image_tag,omitempty"`
-	Runtime  string `json:"runtime,omitempty"`
+	Lang     string `json:"lang,omitempty"`
 }
 
 func (r *CreateImageRequest) Sanitize() {
 	r.ImageTag = strings.TrimSpace(r.ImageTag)
-	r.Runtime = strings.TrimSpace(r.Runtime)
+	r.Lang = strings.TrimSpace(r.Lang)
 }
 
 func (r *CreateImageRequest) Validate() error {
@@ -30,6 +30,13 @@ func (r *CreateImageRequest) Validate() error {
 		})
 	}
 
+	if r.Lang == "" {
+		v.Violations = append(v.Violations, FieldViolation{
+			Field:   "lang",
+			Message: "lang is required",
+		})
+	}
+
 	if len(v.Violations) > 0 {
 		return &v
 	}
@@ -39,5 +46,5 @@ func (r *CreateImageRequest) Validate() error {
 type DockerImageResponse struct {
 	ID       string `json:"id"`
 	ImageTag string `json:"image_tag"`
-	Runtime  string `json:"runtime"`
+	Lang     string `json:"lang"`
 }

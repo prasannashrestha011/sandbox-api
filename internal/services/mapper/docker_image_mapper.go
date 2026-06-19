@@ -19,7 +19,7 @@ func ToDockerImageModel(ctx context.Context, req *dto.CreateImageRequest) *model
 
 	return &models.DockerImage{
 		ImageTag:    req.ImageTag,
-		Runtime:     req.Runtime,
+		Lang:        req.Lang,
 		CreatedByID: userID.String(),
 	}
 }
@@ -32,7 +32,7 @@ func ToDockerImageResponse(d *models.DockerImage) *dto.DockerImageResponse {
 	return &dto.DockerImageResponse{
 		ID:       d.ID,
 		ImageTag: d.ImageTag,
-		Runtime:  d.Runtime,
+		Lang:     d.Lang,
 	}
 }
 

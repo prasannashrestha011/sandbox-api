@@ -5,7 +5,7 @@ import "time"
 type DockerImage struct {
 	ID          string
 	ImageTag    string
-	Runtime     string
+	Lang        string
 	CreatedByID string
 	CreatedBy   User
 	CreatedAt   time.Time

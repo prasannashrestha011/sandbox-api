@@ -13,7 +13,7 @@ func DockerImageToGom(d *models.DockerImage) *model.DockerImage {
 	return &model.DockerImage{
 		ID:          d.ID,
 		ImageTag:    d.ImageTag,
-		Runtime:     d.Runtime,
+		Lang:        d.Lang,
 		CreatedByID: d.CreatedByID,
 		CreatedAt:   d.CreatedAt,
 		UpdatedAt:   d.UpdatedAt,
@@ -28,7 +28,7 @@ func DockerImageFromGom(d *model.DockerImage) *models.DockerImage {
 	return &models.DockerImage{
 		ID:          d.ID,
 		ImageTag:    d.ImageTag,
-		Runtime:     d.Runtime,
+		Lang:        d.Lang,
 		CreatedByID: d.CreatedByID,
 		CreatedAt:   d.CreatedAt,
 		UpdatedAt:   d.UpdatedAt,
