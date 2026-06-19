@@ -44,8 +44,8 @@ func main() {
 	server := &http.Server{
 		Addr:         ":8080",
 		Handler:      application.Router,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
 	//run seperately from the server
