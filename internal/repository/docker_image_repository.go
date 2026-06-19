@@ -15,7 +15,7 @@ type dockerImageRepository struct {
 
 type DockerImageRepository interface {
 	// Create inserts a new Docker image record into the database.
-	Create(ctx context.Context, req *models.DockerImage) error
+	Create(ctx context.Context, req *models.DockerImage) (*models.DockerImage, error)
 	FindByID(ctx context.Context, id string) (*models.DockerImage, error)
 	List(ctx context.Context) ([]*models.DockerImage, error)
 }
@@ -25,9 +25,13 @@ func NewDockerImageRepository(db *gorm.DB) DockerImageRepository {
 	return &dockerImageRepository{db: db}
 }
 
-func (r *dockerImageRepository) Create(ctx context.Context, req *models.DockerImage) error {
+func (r *dockerImageRepository) Create(ctx context.Context, req *models.DockerImage) (*models.DockerImage, error) {
 	image := mapper.DockerImageToGom(req)
-	return r.db.WithContext(ctx).Model(&gormodel.DockerImage{}).Create(image).Error
+	err := r.db.WithContext(ctx).Model(&gormodel.DockerImage{}).Create(image).Error
+	if err != nil {
+		return nil, err
+	}
+	return mapper.DockerImageFromGom(image), nil
 }
 
 func (r *dockerImageRepository) FindByID(ctx context.Context, id string) (*models.DockerImage, error) {

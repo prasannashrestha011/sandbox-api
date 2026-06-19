@@ -32,11 +32,12 @@ func (c *DockerImageController) CreateImage(w http.ResponseWriter, r *http.Reque
 
 	}
 
-	if err := c.service.CreateImage(r.Context(), &req); err != nil {
+	createdImage, err := c.service.CreateImage(r.Context(), &req)
+	if err != nil {
 		return err
 	}
 
-	response.WriteJSON(w, r, http.StatusCreated, "docker image record created successfully", nil, nil)
+	response.WriteJSON(w, r, http.StatusCreated, "docker image record created successfully", createdImage, nil)
 	return nil
 }
 func (c *DockerImageController) ListImages(w http.ResponseWriter, r *http.Request) error {
