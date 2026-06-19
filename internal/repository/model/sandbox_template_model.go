@@ -11,7 +11,7 @@ import (
 type SandboxTemplate struct {
 	ID      string      `gorm:"type:uuid;primaryKey"`
 	UserID  string      `gorm:"not null;index"`
-	Runtime string      `gorm:"not null"`
+	Lang    string      `gorm:"not null"`
 	ImageID string      `gorm:"type:uuid;not null"`
 	Image   DockerImage `gorm:"foreignKey:ImageID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 

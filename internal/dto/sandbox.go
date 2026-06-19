@@ -12,7 +12,7 @@ import (
 type CreateTemplateReq struct {
 	// UserID string `json:"user_id,omitempty"`
 	// Language Environment
-	Runtime string `json:"runtime,omitempty"`
+	Lang string `json:"lang,omitempty"`
 	// Docker Image ID
 	ImageID string `json:"image_id,omitempty"`
 
@@ -44,7 +44,7 @@ type UpdateRequest struct {
 // -- resource limit for sandbox --
 
 func (r *CreateTemplateReq) Sanitize() {
-	r.Runtime = strings.TrimSpace(r.Runtime)
+	r.Lang = strings.TrimSpace(r.Lang)
 	r.ImageID = strings.TrimSpace(r.ImageID)
 	r.NetworkMode = strings.TrimSpace(r.NetworkMode)
 }
@@ -53,10 +53,10 @@ func (r *CreateTemplateReq) Validate() error {
 	r.Sanitize()
 	var v ValidationErrors
 
-	if r.Runtime == "" && r.ImageID == "" {
+	if r.Lang == "" && r.ImageID == "" {
 		v.Violations = append(v.Violations, FieldViolation{
-			Field:   "runtime",
-			Message: "either runtime or image_id is required",
+			Field:   "lang",
+			Message: "either lang or image_id is required",
 		})
 	}
 
@@ -92,8 +92,7 @@ type UpdateStatusRequest struct {
 }
 
 type ExecuteCodeRequest struct {
-	Runtime string `json:"runtime"`
-	Code    string `json:"code"`
+	Code string `json:"code"`
 }
 
 func (r *ExecuteCodeRequest) Sanitize() {
@@ -110,13 +109,6 @@ func (r *ExecuteCodeRequest) Validate() error {
 			Message: "code is required",
 		})
 	}
-	if r.Runtime == "" {
-		v.Violations = append(v.Violations, FieldViolation{
-			Field:   "runtime",
-			Message: "runtime is required",
-		})
-	}
-
 	if len(v.Violations) > 0 {
 		return &v
 	}
@@ -144,7 +136,7 @@ type SandboxTemplateResponse struct {
 	ID             string        `json:"id"`
 	UserID         string        `json:"user_id"`
 	ImageTag       string        `json:"image_tag,omitempty"`
-	Runtime        string        `json:"runtime,omitempty"`
+	Lang           string        `json:"lang,omitempty"`
 	MemoryLimit    int64         `json:"memory_limit,omitempty"`
 	CPULimit       int64         `json:"cpu_limit,omitempty"`
 	PidsLimit      int64         `json:"pids_limit,omitempty"`
