@@ -63,7 +63,7 @@ func (s *sandboxSessionService) CreateSession(ctx context.Context, templateID st
 
 	session.SessionTimeout = template.SessionTimeout
 	session.ExecTimeout = template.ExecTimeout
-	session.Runtime = template.Runtime
+	session.Lang = template.Lang
 	session.ContainerID = containerID
 	session.ContainerName = containerName
 	session.Status = enums.StateActive
@@ -112,13 +112,14 @@ func (s *sandboxSessionService) ExecuteCommand(ctx context.Context, sessionID st
 		return nil, domain.InvalidRequestError("lab session expired", nil)
 	}
 
-	cmd, err := lang.BuildCommand(session.Runtime, execModel.Command)
+	cmd, err := lang.BuildCommand(session.Lang, execModel.Command)
 	if err != nil {
 		return nil, err
 	}
 	resp, err := s.dockerclient.ExecuteCode(ctx, session.ContainerID, cmd)
 	if err != nil {
-		return nil, err
+		log.Println("error in sever")
+		return nil, domain.InvalidRequestError("execution timeout", nil)
 	}
 	execModel.ExitCode = resp.ExitCode
 	execModel.Stdout = resp.Stdout
