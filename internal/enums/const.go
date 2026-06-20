@@ -37,3 +37,11 @@ const (
 	SubmissionAccepted SubmissionStatus = "accepted"
 	SubmissionRejected SubmissionStatus = "rejected"
 )
+
+type PoolStatus string
+
+const (
+	PoolActive   PoolStatus = "active"
+	PoolInactive PoolStatus = "inactive"
+	PoolDraining PoolStatus = "draining"
+)
