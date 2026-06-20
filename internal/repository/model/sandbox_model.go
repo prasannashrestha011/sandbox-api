@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type SandboxSession struct {
+type SandboxInstance struct {
 	ID string `gorm:"type:uuid;primaryKey"`
 
 	// ownership
@@ -15,25 +15,22 @@ type SandboxSession struct {
 
 	// link to template
 	TemplateID string `gorm:"not null;index"`
+	PoolID     string `gorm:"not null;index"`
 
 	Lang string `gorm:"not null"`
 	// runtime container info
-	ContainerID   string
-	ContainerName string
+	ContainerID string
 
 	// lifecycle
 	Status string `gorm:"not null;index"` // running, stopped, expired, failed
 
-	// time control
-	StartedAt time.Time
-	ExpiresAt time.Time
-	EndedAt   *time.Time
+	LastUsed time.Time `gorm:"not null;index"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
-func (s *SandboxSession) BeforeCreate(tx *gorm.DB) (err error) {
+func (s *SandboxInstance) BeforeCreate(tx *gorm.DB) (err error) {
 	if s.ID == "" {
 		s.ID = uuid.New().String()
 	}

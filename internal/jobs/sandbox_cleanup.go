@@ -82,7 +82,7 @@ func HandleSandboxCleanup(ctx context.Context, t *asynq.Task) error {
 		return err
 	}
 	// after successful container removal
-	err = db.Model(&model.SandboxSession{}).
+	err = db.Model(&model.SandboxInstance{}).
 		Where("container_id = ?", p.ContainerID).
 		Update("status", "inactive").Error
 

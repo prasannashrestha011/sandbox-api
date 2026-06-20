@@ -26,14 +26,14 @@ func NewSandboxRepository(db *gorm.DB) SandboxRepository {
 
 func (s *sandboxRepository) Create(ctx context.Context, req *models.SandboxSession) (*models.SandboxSession, error) {
 	newsession := mapper.SessionToGorm(req)
-	if err := s.db.WithContext(ctx).Model(&gormodel.SandboxSession{}).Create(newsession).Error; err != nil {
+	if err := s.db.WithContext(ctx).Model(&gormodel.SandboxInstance{}).Create(newsession).Error; err != nil {
 		return nil, err
 	}
 	return mapper.SessionFromGorm(newsession), nil
 }
 
 func (s *sandboxRepository) Delete(ctx context.Context, id string) error {
-	if err := s.db.WithContext(ctx).Where("id = ?", id).Delete(&gormodel.SandboxSession{}).Error; err != nil {
+	if err := s.db.WithContext(ctx).Where("id = ?", id).Delete(&gormodel.SandboxInstance{}).Error; err != nil {
 		return err
 	}
 	return nil
@@ -45,7 +45,7 @@ func (s *sandboxRepository) FindActiveSessionByUser(
 	templateID string,
 ) (*models.SandboxSession, error) {
 
-	var session gormodel.SandboxSession
+	var session gormodel.SandboxInstance
 
 	err := s.db.WithContext(ctx).
 		Where(
@@ -64,7 +64,7 @@ func (s *sandboxRepository) FindActiveSessionByUser(
 }
 
 func (s *sandboxRepository) UpdateStatus(ctx context.Context, id string, status string) error {
-	if err := s.db.WithContext(ctx).Model(&gormodel.SandboxSession{}).Where("id = ?", id).Update("status", status).Error; err != nil {
+	if err := s.db.WithContext(ctx).Model(&gormodel.SandboxInstance{}).Where("id = ?", id).Update("status", status).Error; err != nil {
 		return err
 	}
 	return nil

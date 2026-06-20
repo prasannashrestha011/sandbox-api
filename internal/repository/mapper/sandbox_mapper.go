@@ -51,30 +51,26 @@ func TemplateListFromGorm(list []gormodel.SandboxTemplate) []models.SandboxTempl
 	return result
 }
 
-func SessionToGorm(s *models.SandboxSession) *gormodel.SandboxSession {
-	return &gormodel.SandboxSession{
-		ID:            s.ID,
-		UserID:        s.UserID,
-		TemplateID:    s.TemplateID,
-		ContainerID:   s.ContainerID,
-		ContainerName: s.ContainerName,
-		Status:        string(s.Status),
-		ExpiresAt:     s.ExpiresAt,
-		Lang:          s.Lang,
+func SessionToGorm(s *models.SandboxSession) *gormodel.SandboxInstance {
+	return &gormodel.SandboxInstance{
+		ID:          s.ID,
+		UserID:      s.UserID,
+		TemplateID:  s.TemplateID,
+		ContainerID: s.ContainerID,
+		Status:      string(s.Status),
+		Lang:        s.Lang,
 	}
 }
 
-func SessionFromGorm(m *gormodel.SandboxSession) *models.SandboxSession {
+func SessionFromGorm(m *gormodel.SandboxInstance) *models.SandboxSession {
 	return &models.SandboxSession{
-		ID:            m.ID,
-		UserID:        m.UserID,
-		TemplateID:    m.TemplateID,
-		ContainerID:   m.ContainerID,
-		ContainerName: m.ContainerName,
-		Status:        enums.SandboxState(m.Status),
-		ExpiresAt:     m.ExpiresAt,
-		CreatedAt:     m.CreatedAt,
-		UpdatedAt:     m.UpdatedAt,
-		Lang:          m.Lang,
+		ID:          m.ID,
+		UserID:      m.UserID,
+		TemplateID:  m.TemplateID,
+		ContainerID: m.ContainerID,
+		Status:      enums.SandboxState(m.Status),
+		CreatedAt:   m.CreatedAt,
+		UpdatedAt:   m.UpdatedAt,
+		Lang:        m.Lang,
 	}
 }
