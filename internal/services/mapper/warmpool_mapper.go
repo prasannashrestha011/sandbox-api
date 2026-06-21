@@ -23,3 +23,12 @@ func ToScalingPolicyModel(dto *dto.CreateWarmPoolRequest, warmPoolID string) *mo
 		CooldownSec:      dto.CooldownSec,
 	}
 }
+
+func ToWarmPoolResponse(model *models.WarmPool) *dto.WarmPoolResponse {
+	return &dto.WarmPoolResponse{
+		ID:         model.ID,
+		TemplateID: model.TemplateID,
+		MaxActive:  model.MaxActive,
+		Status:     string(model.Status),
+	}
+}
