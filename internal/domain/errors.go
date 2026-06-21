@@ -39,6 +39,9 @@ const (
 
 	CodeEnrollmentNotFound      ErrorCode = "ENROLLMENT_NOT_FOUND"
 	CodeEnrollmentAlreadyExists ErrorCode = "ENROLLMENT_ALREADY_EXISTS"
+
+	CodeWarmpoolNotFound      ErrorCode = "WARPOOL_NOT_FOUND"
+	CodeWarmpoolAlreadyExists ErrorCode = "WARPOOL_ALREADY_EXISTS"
 )
 
 var AllErrorCodes = map[string]ErrorCode{
@@ -63,4 +66,6 @@ var AllErrorCodes = map[string]ErrorCode{
 	string(CodeExerciseAlreadyExists):    CodeExerciseAlreadyExists,
 	string(CodeEnrollmentNotFound):       CodeEnrollmentNotFound,
 	string(CodeEnrollmentAlreadyExists):  CodeEnrollmentAlreadyExists,
+	string(CodeWarmpoolNotFound):         CodeWarmpoolNotFound,
+	string(CodeWarmpoolAlreadyExists):    CodeWarmpoolAlreadyExists,
 }
