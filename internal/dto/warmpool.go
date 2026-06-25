@@ -51,3 +51,8 @@ type CreateWarmPoolResponse struct {
 	Pool   WarmPoolResponse      `json:"pool"`
 	Policy ScalingPolicyResponse `json:"policy"`
 }
+
+type SandboxProvisionPayload struct {
+	PoolID     string `json:"poolId"`
+	TemplateID string `json:"templateId"`
+}
