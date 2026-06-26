@@ -54,17 +54,17 @@ func ToSandboxTemplateResponseList(sandboxes []models.SandboxTemplate) []*dto.Sa
 	return responses
 }
 
-func ToSessionRequest(ctx context.Context, templateID string) (*models.SandboxSession, error) {
+func ToSessionRequest(ctx context.Context, templateID string) (*models.SandboxInstance, error) {
 	userID, ok := request_context.UserID(ctx)
 	if !ok {
 		return nil, http.ErrNoCookie
 	}
-	return &models.SandboxSession{
+	return &models.SandboxInstance{
 		UserID:     userID.String(),
 		TemplateID: templateID,
 	}, nil
 }
-func ToSessionResponse(session *models.SandboxSession) *dto.SandboxSessionResponse {
+func ToSessionResponse(session *models.SandboxInstance) *dto.SandboxSessionResponse {
 	if session == nil {
 		return &dto.SandboxSessionResponse{}
 	}
@@ -74,7 +74,6 @@ func ToSessionResponse(session *models.SandboxSession) *dto.SandboxSessionRespon
 		TemplateID: session.TemplateID,
 		Status:     session.Status,
 		CreatedAt:  session.CreatedAt,
-		ExpiresAt:  session.ExpiresAt,
 	}
 }
 

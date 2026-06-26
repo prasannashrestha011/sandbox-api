@@ -11,14 +11,13 @@ import (
 	"main/internal/sandbox/core"
 	"main/internal/sandbox/lang"
 	"main/internal/services/mapper"
-	"time"
 
 	"github.com/hibiken/asynq"
 )
 
-type SandboxSessionService interface {
-	// CreateSession creates a new sandbox session for a given user and template.
-	CreateSession(ctx context.Context, templateID string) (*dto.SandboxSessionResponse, error)
+type SandboxInstanceService interface {
+	// CreatePool creates a new sandbox pool for a given template.
+	CreateInstance(ctx context.Context, templateID string) (*dto.SandboxSessionResponse, error)
 
 	// GetActiveSession retrieves the active sandbox session for a given user and template.
 	GetActiveSession(ctx context.Context, userID string, templateID string) (*dto.SandboxSessionResponse, error)
@@ -31,24 +30,20 @@ type SandboxSessionService interface {
 }
 
 type sandboxSessionService struct {
-	repo          repository.SandboxRepository
+	repo          repository.SandboxInstanceRepository
 	template_repo repository.SandboxTemplateRepository
 	dockerclient  core.SandboxClient
 	asynqclient   *asynq.Client
 }
 
-func NewSandboxSessionService(repo repository.SandboxRepository, templateRepo repository.SandboxTemplateRepository, dockerclient core.SandboxClient, asynqclient *asynq.Client) SandboxSessionService {
+func NewSandboxInstanceService(repo repository.SandboxInstanceRepository, templateRepo repository.SandboxTemplateRepository, dockerclient core.SandboxClient, asynqclient *asynq.Client) SandboxInstanceService {
 	return &sandboxSessionService{repo: repo, template_repo: templateRepo, dockerclient: dockerclient, asynqclient: asynqclient}
 }
 
-func (s *sandboxSessionService) CreateSession(ctx context.Context, templateID string) (*dto.SandboxSessionResponse, error) {
+func (s *sandboxSessionService) CreateInstance(ctx context.Context, templateID string) (*dto.SandboxSessionResponse, error) {
 	session, err := mapper.ToSessionRequest(ctx, templateID)
 	if err != nil {
 		return nil, err
-	}
-	activeSession, err := s.repo.FindActiveSessionByUser(ctx, session.UserID, session.TemplateID)
-	if err == nil && activeSession != nil {
-		return mapper.ToSessionResponse(activeSession), nil
 	}
 
 	template, err := s.template_repo.FindByID(ctx, templateID)
@@ -67,7 +62,6 @@ func (s *sandboxSessionService) CreateSession(ctx context.Context, templateID st
 	session.ContainerID = containerID
 	session.ContainerName = containerName
 	session.Status = enums.StateActive
-	session.ExpiresAt = time.Now().Add(template.SessionTimeout * 3600 * time.Second)
 
 	// payload := &dto.SandboxCleanupPayload{
 	// 	ContainerID: containerID,

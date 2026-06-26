@@ -13,23 +13,23 @@ type sandboxRepository struct {
 	db *gorm.DB
 }
 
-type SandboxRepository interface {
-	Create(ctx context.Context, req *models.SandboxSession) (*models.SandboxSession, error)
-	FindActiveSessionByUser(ctx context.Context, userID string, templateID string) (*models.SandboxSession, error)
+type SandboxInstanceRepository interface {
+	Create(ctx context.Context, req *models.SandboxInstance) (*models.SandboxInstance, error)
+	FindActiveSessionByUser(ctx context.Context, userID string, templateID string) (*models.SandboxInstance, error)
 	Delete(ctx context.Context, id string) error
 	UpdateStatus(ctx context.Context, id string, status string) error
 }
 
-func NewSandboxRepository(db *gorm.DB) SandboxRepository {
+func NewSandboxInstanceRepository(db *gorm.DB) SandboxInstanceRepository {
 	return &sandboxRepository{db: db}
 }
 
-func (s *sandboxRepository) Create(ctx context.Context, req *models.SandboxSession) (*models.SandboxSession, error) {
-	newsession := mapper.SessionToGorm(req)
-	if err := s.db.WithContext(ctx).Model(&gormodel.SandboxInstance{}).Create(newsession).Error; err != nil {
+func (s *sandboxRepository) Create(ctx context.Context, req *models.SandboxInstance) (*models.SandboxInstance, error) {
+	newinstance := mapper.InstanceToGorm(req)
+	if err := s.db.WithContext(ctx).Model(&gormodel.SandboxInstance{}).Create(newinstance).Error; err != nil {
 		return nil, err
 	}
-	return mapper.SessionFromGorm(newsession), nil
+	return mapper.InstanceFromGorm(newinstance), nil
 }
 
 func (s *sandboxRepository) Delete(ctx context.Context, id string) error {
@@ -43,7 +43,7 @@ func (s *sandboxRepository) FindActiveSessionByUser(
 	ctx context.Context,
 	userID string,
 	templateID string,
-) (*models.SandboxSession, error) {
+) (*models.SandboxInstance, error) {
 
 	var session gormodel.SandboxInstance
 
@@ -60,7 +60,7 @@ func (s *sandboxRepository) FindActiveSessionByUser(
 		return nil, err
 	}
 
-	return mapper.SessionFromGorm(&session), nil
+	return mapper.InstanceFromGorm(&session), nil
 }
 
 func (s *sandboxRepository) UpdateStatus(ctx context.Context, id string, status string) error {

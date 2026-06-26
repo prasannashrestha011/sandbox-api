@@ -18,8 +18,9 @@ type SandboxTemplate struct {
 	ExecTimeout    time.Duration
 	NetworkMode    string
 }
-type SandboxSession struct {
+type SandboxInstance struct {
 	ID         string
+	PoolID     string
 	TemplateID string
 	UserID     string
 
@@ -31,7 +32,7 @@ type SandboxSession struct {
 
 	SessionTimeout time.Duration
 	ExecTimeout    time.Duration
-	ExpiresAt      time.Time
+	LastUsedAt     time.Time
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 }

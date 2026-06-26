@@ -51,22 +51,19 @@ func TemplateListFromGorm(list []gormodel.SandboxTemplate) []models.SandboxTempl
 	return result
 }
 
-func SessionToGorm(s *models.SandboxSession) *gormodel.SandboxInstance {
+func InstanceToGorm(s *models.SandboxInstance) *gormodel.SandboxInstance {
 	return &gormodel.SandboxInstance{
 		ID:          s.ID,
-		UserID:      s.UserID,
-		TemplateID:  s.TemplateID,
 		ContainerID: s.ContainerID,
 		Status:      string(s.Status),
 		Lang:        s.Lang,
+		PoolID:      s.PoolID,
 	}
 }
 
-func SessionFromGorm(m *gormodel.SandboxInstance) *models.SandboxSession {
-	return &models.SandboxSession{
+func InstanceFromGorm(m *gormodel.SandboxInstance) *models.SandboxInstance {
+	return &models.SandboxInstance{
 		ID:          m.ID,
-		UserID:      m.UserID,
-		TemplateID:  m.TemplateID,
 		ContainerID: m.ContainerID,
 		Status:      enums.SandboxState(m.Status),
 		CreatedAt:   m.CreatedAt,
