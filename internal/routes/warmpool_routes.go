@@ -13,5 +13,6 @@ func RegisterWarmPoolRoutes(router *chi.Mux, handler *controllers.WarmPoolHandle
 		r.Use(proxy.AuthMiddleware)
 		r.Use(proxy.AdminMiddleware)
 		response.WrapPost(r, "/", handler.CreateWarmPool)
+		response.WrapPost(r, "/execute", handler.ExecuteCommand)
 	})
 }
