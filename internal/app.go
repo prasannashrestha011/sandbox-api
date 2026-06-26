@@ -33,7 +33,8 @@ type Repos struct {
 	EnrollmentRepo      lab_repo.EnrollmentRepository
 	SubmissionRepo      lab_repo.SubmissionRepository
 	SandboxTemplateRepo repository.SandboxTemplateRepository
-	SandboxSessionRepo  repository.SandboxRepository
+	SandboxSessionRepo  repository.SandboxInstanceRepository
+	WarmPoolRepo        repository.WarmPoolRepository
 }
 
 // Services groups all services.
@@ -47,9 +48,10 @@ type Services struct {
 	ExerciseService    lab_services.ExerciseService
 	EnrollmentService  lab_services.EnrollmentService
 	SubmissionService  lab_services.SubmissionService
+	WarmPoolService    services.WarmpoolService
 
 	SandboxTemplateService services.SandboxTemplateService
-	SandboxSessionService  services.SandboxSessionService
+	SandboxInstanceService services.SandboxInstanceService
 }
 
 // Controllers groups all controllers.
@@ -66,7 +68,8 @@ type Controllers struct {
 	EnrollmentController   *lab_handler.EnrollmentController
 	SubmissionController   *lab_handler.SubmissionHandler
 	SandboxTemplateHandler *controllers.SandboxController
-	SandboxSessionHandler  *controllers.SandboxSessionHandler
+	SandboxInstanceHandler *controllers.SandboxInstanceHandler
+	WarmPoolHandler        *controllers.WarmPoolHandler
 }
 
 // App wires repositories, services, controllers, and routes.
@@ -98,7 +101,8 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		EnrollmentRepo:      lab_repo.NewEnrollmentRepository(db),
 		SubmissionRepo:      lab_repo.NewSubmissionRepository(db),
 		SandboxTemplateRepo: repository.NewSandboxTemplateRepository(db),
-		SandboxSessionRepo:  repository.NewSandboxRepository(db),
+		SandboxSessionRepo:  repository.NewSandboxInstanceRepository(db),
+		WarmPoolRepo:        repository.NewWarmPoolRepository(db),
 	}
 
 	servicesGroup := Services{
@@ -112,7 +116,8 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		EnrollmentService:      lab_services.NewEnrollmentService(repos.EnrollmentRepo),
 		SubmissionService:      lab_services.NewSubmissionService(repos.SubmissionRepo, repos.ExerciseRepo),
 		SandboxTemplateService: services.NewSandboxTemplateService(repos.SandboxTemplateRepo, repos.DockerImageRepo, sandboxClient),
-		SandboxSessionService:  services.NewSandboxSessionService(repos.SandboxSessionRepo, repos.SandboxTemplateRepo, sandboxClient, asynqClient),
+		SandboxInstanceService: services.NewSandboxInstanceService(repos.SandboxSessionRepo, repos.SandboxTemplateRepo, sandboxClient, asynqClient),
+		WarmPoolService:        services.NewWarmpoolService(repos.WarmPoolRepo, asynqClient),
 	}
 
 	controllersGroup := Controllers{
@@ -127,7 +132,8 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		EnrollmentController:   lab_handler.NewEnrollmentController(servicesGroup.EnrollmentService),
 		SubmissionController:   lab_handler.NewSubmissionHandler(servicesGroup.SubmissionService),
 		SandboxTemplateHandler: controllers.NewSandboxController(servicesGroup.SandboxTemplateService),
-		SandboxSessionHandler:  controllers.NewSandboxSessionHandler(servicesGroup.SandboxSessionService),
+		SandboxInstanceHandler: controllers.NewSandboxInstanceHandler(servicesGroup.SandboxInstanceService),
+		WarmPoolHandler:        controllers.NewWarmPoolHandler(servicesGroup.WarmPoolService),
 	}
 
 	//listeners for sandbox events (e.g., cleanup after timeout)
@@ -151,7 +157,7 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 	router.Use(proxy.ErrorMiddleware)
 	router.Use(proxy.RateLimiterMiddleware)
 	router.Get("/", controllersGroup.PingerController.Ping)
-	routes.RegisterSandboxRoutes(router, controllersGroup.SandboxController, controllersGroup.SandboxSessionHandler)
+	routes.RegisterSandboxRoutes(router, controllersGroup.SandboxController, controllersGroup.SandboxInstanceHandler)
 	routes.RegisterUserRoutes(router, controllersGroup.UserController)
 	routes.RegisterDockerImageRoutes(router, controllersGroup.DockerImageController)
 	routes.RegisterLabRoutes(router,
@@ -160,6 +166,7 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		controllersGroup.ExerciseController,
 		controllersGroup.EnrollmentController,
 		controllersGroup.SubmissionController)
+	routes.RegisterWarmPoolRoutes(router, controllersGroup.WarmPoolHandler)
 	// websocket.RegisterWebSocketRoutes(router, controllersGroup.WebSocketController)
 	return &App{
 		Repos:       repos,
