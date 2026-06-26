@@ -64,13 +64,12 @@ func ToSessionRequest(ctx context.Context, templateID string) (*models.SandboxIn
 		TemplateID: templateID,
 	}, nil
 }
-func ToSessionResponse(session *models.SandboxInstance) *dto.SandboxSessionResponse {
+func ToSessionResponse(session *models.SandboxInstance) *dto.SandboxInstanceResponse {
 	if session == nil {
-		return &dto.SandboxSessionResponse{}
+		return &dto.SandboxInstanceResponse{}
 	}
 
-	return &dto.SandboxSessionResponse{
-		SessionID:  session.ID,
+	return &dto.SandboxInstanceResponse{
 		TemplateID: session.TemplateID,
 		Status:     session.Status,
 		CreatedAt:  session.CreatedAt,
@@ -86,6 +85,7 @@ func ToSandboxExecutionModel(ctx context.Context, sessionID string, req *dto.San
 	return &models.SandboxExecution{
 		UserID:  userID.String(),
 		Command: req.Command,
+		Lang:    req.Lang,
 	}, nil
 }
 func ToSandboxExecutionResponse(exec *models.SandboxExecution) *dto.SandboxExecResponse {
