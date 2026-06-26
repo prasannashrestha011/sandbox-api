@@ -10,12 +10,8 @@ import (
 type SandboxInstance struct {
 	ID string `gorm:"type:uuid;primaryKey"`
 
-	// ownership
-	UserID string `gorm:"not null;index"`
-
 	// link to template
-	TemplateID string `gorm:"not null;index"`
-	PoolID     string `gorm:"not null;index"`
+	PoolID string `gorm:"not null;index"`
 
 	Lang string `gorm:"not null"`
 	// runtime container info
