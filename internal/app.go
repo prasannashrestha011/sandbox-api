@@ -68,7 +68,6 @@ type Controllers struct {
 	EnrollmentController   *lab_handler.EnrollmentController
 	SubmissionController   *lab_handler.SubmissionHandler
 	SandboxTemplateHandler *controllers.SandboxController
-	SandboxInstanceHandler *controllers.SandboxInstanceHandler
 	WarmPoolHandler        *controllers.WarmPoolHandler
 }
 
@@ -104,6 +103,18 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		SandboxSessionRepo:  repository.NewSandboxInstanceRepository(db),
 		WarmPoolRepo:        repository.NewWarmPoolRepository(db),
 	}
+	sandboxInstanceService := services.NewSandboxInstanceService(
+		repos.SandboxSessionRepo,
+		repos.SandboxTemplateRepo,
+		sandboxClient,
+		asynqClient,
+	)
+
+	warmPoolService := services.NewWarmpoolService(
+		repos.WarmPoolRepo,
+		sandboxInstanceService, // passed as interface
+		asynqClient,
+	)
 
 	servicesGroup := Services{
 		SandboxService:         services.NewSandboxTemplateService(repos.SandboxRepo, repos.DockerImageRepo, sandboxClient),
@@ -117,7 +128,7 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		SubmissionService:      lab_services.NewSubmissionService(repos.SubmissionRepo, repos.ExerciseRepo),
 		SandboxTemplateService: services.NewSandboxTemplateService(repos.SandboxTemplateRepo, repos.DockerImageRepo, sandboxClient),
 		SandboxInstanceService: services.NewSandboxInstanceService(repos.SandboxSessionRepo, repos.SandboxTemplateRepo, sandboxClient, asynqClient),
-		WarmPoolService:        services.NewWarmpoolService(repos.WarmPoolRepo, asynqClient),
+		WarmPoolService:        warmPoolService,
 	}
 
 	controllersGroup := Controllers{
@@ -132,7 +143,6 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 		EnrollmentController:   lab_handler.NewEnrollmentController(servicesGroup.EnrollmentService),
 		SubmissionController:   lab_handler.NewSubmissionHandler(servicesGroup.SubmissionService),
 		SandboxTemplateHandler: controllers.NewSandboxController(servicesGroup.SandboxTemplateService),
-		SandboxInstanceHandler: controllers.NewSandboxInstanceHandler(servicesGroup.SandboxInstanceService),
 		WarmPoolHandler:        controllers.NewWarmPoolHandler(servicesGroup.WarmPoolService),
 	}
 
@@ -157,7 +167,6 @@ func New(db *gorm.DB, sandboxClient core.SandboxClient) (*App, error) {
 	router.Use(proxy.ErrorMiddleware)
 	router.Use(proxy.RateLimiterMiddleware)
 	router.Get("/", controllersGroup.PingerController.Ping)
-	routes.RegisterSandboxRoutes(router, controllersGroup.SandboxController, controllersGroup.SandboxInstanceHandler)
 	routes.RegisterUserRoutes(router, controllersGroup.UserController)
 	routes.RegisterDockerImageRoutes(router, controllersGroup.DockerImageController)
 	routes.RegisterLabRoutes(router,
