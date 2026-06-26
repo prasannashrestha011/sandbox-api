@@ -31,3 +31,16 @@ func (h *WarmPoolHandler) CreateWarmPool(w http.ResponseWriter, r *http.Request)
 	response.WriteJSON(w, r, http.StatusOK, "create new warm pool", resp, nil)
 	return nil
 }
+
+func (h *WarmPoolHandler) ExecuteCommand(w http.ResponseWriter, r *http.Request) error {
+	var req dto.SandboxExecReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return domain.InvalidRequestError("invalid request body", nil)
+	}
+	resp, err := h.warmpoolService.Execute(r.Context(), &req)
+	if err != nil {
+		return err
+	}
+	response.WriteJSON(w, r, http.StatusOK, "execute command in warm pool", resp, nil)
+	return nil
+}
