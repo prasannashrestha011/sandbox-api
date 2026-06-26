@@ -177,8 +177,7 @@ func (r *CreateSessionReq) Validate() error {
 	return nil
 }
 
-type SandboxSessionResponse struct {
-	SessionID  string             `json:"session_id"`
+type SandboxInstanceResponse struct {
 	TemplateID string             `json:"template_id"`
 	Status     enums.SandboxState `json:"status"`
 	CreatedAt  time.Time          `json:"created_at"`
@@ -186,6 +185,7 @@ type SandboxSessionResponse struct {
 }
 
 type SandboxExecReq struct {
+	Lang    string `json:"lang"`
 	Command string `json:"command,omitempty"`
 }
 
