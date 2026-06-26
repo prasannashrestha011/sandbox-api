@@ -30,17 +30,17 @@ type SandboxInstance struct {
 	Lang   string
 	Status enums.SandboxState
 
-	SessionTimeout time.Duration
-	ExecTimeout    time.Duration
-	LastUsedAt     time.Time
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	ExecTimeout time.Duration
+	LastUsedAt  time.Time
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type SandboxExecution struct {
 	ID        string
 	UserID    string
 	SessionID string
+	Lang      string
 
 	Command   string
 	Stdout    string
